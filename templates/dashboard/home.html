@@ -1,37 +1,59 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>SmartDuka Dashboard</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <h1>SmartDuka Dashboard</h1>
+{% block content %}
 
-    <h2>Inventory Summary</h2>
-    <ul>
-        <li>Total Products: {{ summary.total_products }}</li>
-        <li>Low Stock Items: {{ summary.low_stock_count }}</li>
-        <li>Dead Stock Items: {{ summary.dead_stock_count }}</li>
-        <li>Total Stock Units: {{ summary.total_stock_items }}</li>
-    </ul>
+<h1>SmartDuka Dashboard</h1>
 
+<div class="grid">
+
+    <div class="stat">
+        <h3>Total Products</h3>
+        <p>{{ summary.total_products }}</p>
+    </div>
+
+    <div class="stat">
+        <h3>Low Stock</h3>
+        <p>{{ summary.low_stock_count }}</p>
+    </div>
+
+    <div class="stat">
+        <h3>Dead Stock</h3>
+        <p>{{ summary.dead_stock_count }}</p>
+    </div>
+
+    <div class="stat">
+        <h3>Total Stock Units</h3>
+        <p>{{ summary.total_stock_items }}</p>
+    </div>
+
+</div>
+
+<div class="card">
     <h2>Low Stock Products</h2>
-    <ul>
-        {% for product in low_stock_products %}
-            <li>{{ product.name }} (Stock: {{ product.stock_quantity }})</li>
-        {% empty %}
-            <li>No low stock items</li>
-        {% endfor %}
-    </ul>
 
+    {% if low_stock_products %}
+        <ul>
+            {% for product in low_stock_products %}
+                <li>{{ product.name }} — Stock: {{ product.stock_quantity }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No low stock items</p>
+    {% endif %}
+</div>
+
+<div class="card">
     <h2>Dead Stock Products</h2>
-    <ul>
-        {% for product in dead_stock_products %}
-            <li>{{ product.name }}</li>
-        {% empty %}
-            <li>No dead stock items</li>
-        {% endfor %}
-    </ul>
 
-</body>
-</html>
+    {% if dead_stock_products %}
+        <ul>
+            {% for product in dead_stock_products %}
+                <li>{{ product.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No dead stock items</p>
+    {% endif %}
+</div>
+
+{% endblock %}
