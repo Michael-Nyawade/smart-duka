@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product
+from .models import Category, Product, StockMovement
 
 # Register models
 @admin.register(Category)
@@ -29,3 +29,15 @@ class ProductAdmin(admin.ModelAdmin):
 
     low_stock_status.boolean = True
     low_stock_status.short_description = 'Low Stock'
+
+@admin.register(StockMovement)
+class StockMovement(admin.ModelAdmin):
+    list_display = (
+        'product',
+        'movement_type',
+        'quantity',
+        'created_at',
+    )
+
+    list_filter = ('movement_type', 'created_at')
+    search_fields = ('product__name',)
