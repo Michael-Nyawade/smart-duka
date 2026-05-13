@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SmartDuka Dashboard</title>
+</head>
+<body>
+
+    <h1>SmartDuka Dashboard</h1>
+
+    <h2>Inventory Summary</h2>
+    <ul>
+        <li>Total Products: {{ summary.total_products }}</li>
+        <li>Low Stock Items: {{ summary.low_stock_count }}</li>
+        <li>Dead Stock Items: {{ summary.dead_stock_count }}</li>
+        <li>Total Stock Units: {{ summary.total_stock_items }}</li>
+    </ul>
+
+    <h2>Low Stock Products</h2>
+    <ul>
+        {% for product in low_stock_products %}
+            <li>{{ product.name }} (Stock: {{ product.stock_quantity }})</li>
+        {% empty %}
+            <li>No low stock items</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Dead Stock Products</h2>
+    <ul>
+        {% for product in dead_stock_products %}
+            <li>{{ product.name }}</li>
+        {% empty %}
+            <li>No dead stock items</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
