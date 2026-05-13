@@ -62,5 +62,23 @@ class StockMovement(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+
+        if not self.pk:
+
+            if self.movement_type == 'IN':
+                self.product.stock_quantity += self.quantity
+
+            elif self.movement_type == 'OUT':
+
+                if self.quantity > self.product.stock_quantity:
+                    raise ValueError("Not enough stock available.")
+
+                self.product.stock_quantity -= self.quantity
+
+            self.product.save()
+
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         return f"{self.product.name} - {self.movement_type} - {self.quantity}"
