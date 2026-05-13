@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
 
 
 class Category(models.Model):
@@ -35,6 +37,18 @@ class Product(models.Model):
     def is_low_stock(self):
         return self.stock_quantity <= self.low_stock_threshold
 
+    # Dead stock detecttion
+    def is_dead_stock(self):
+
+        latest_movement = self.stock_movements.order_by('-created_at').first()
+
+        if not latest_movement:
+            return True
+
+        dead_stock_threshold = timezone.now() - timedelta(days=30)
+
+        return latest_movement.created_at < dead_stock_threshold
+    
     def __str__(self):
         return self.name
 
@@ -62,6 +76,7 @@ class StockMovement(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Automatic stock update from stock movement
     def save(self, *args, **kwargs):
 
         if not self.pk:
@@ -79,6 +94,6 @@ class StockMovement(models.Model):
             self.product.save()
 
         super().save(*args, **kwargs)
-        
+
     def __str__(self):
         return f"{self.product.name} - {self.movement_type} - {self.quantity}"

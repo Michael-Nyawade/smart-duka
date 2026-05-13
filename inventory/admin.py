@@ -19,6 +19,7 @@ class ProductAdmin(admin.ModelAdmin):
         'selling_price',
         'profit_per_item',
         'low_stock_status',
+        'dead_stock_status',
     )
 
     list_filter = ('category',)
@@ -35,6 +36,13 @@ class ProductAdmin(admin.ModelAdmin):
 
     low_stock_status.boolean = True
     low_stock_status.short_description = 'Low Stock'
+
+
+    def dead_stock_status(self, obj):
+        return obj.is_dead_stock()
+
+    dead_stock_status.boolean = True
+    dead_stock_status.short_description = 'Dead Stock'
 
 @admin.register(StockMovement)
 class StockMovement(admin.ModelAdmin):
