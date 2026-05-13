@@ -24,6 +24,12 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('category',)
     search_fields = ('name', 'sku')
 
+    # All stock changes happen through Stock Movements
+    readonly_fields = ('stock_quantity'),
+
+    list_per_page = 20
+    ordering = ('name',) 
+
     def low_stock_status(self, obj):
         return obj.is_low_stock()
 
