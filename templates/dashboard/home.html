@@ -3,6 +3,31 @@
 {% block content %}
 
 <h1>SmartDuka Dashboard</h1>
+<h2>Today's Sales Insights</h2>
+
+<div class="grid">
+
+    <div class="stat">
+        <h3>Sales Today</h3>
+        <p>{{ daily_sales.total_sales_count }}</p>
+    </div>
+
+    <div class="stat">
+        <h3>Revenue Today</h3>
+        <p>KES {{ daily_sales.total_revenue }}</p>
+    </div>
+
+    <div class="stat">
+        <h3>Profit Today</h3>
+        <p>KES {{ daily_sales.total_profit }}</p>
+    </div>
+
+    <div class="stat">
+        <h3>Credit Sales</h3>
+        <p>{{ daily_sales.credit_sales_count }}</p>
+    </div>
+
+</div>
 
 <div class="grid">
 
