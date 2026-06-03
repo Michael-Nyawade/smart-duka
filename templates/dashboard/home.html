@@ -29,6 +29,49 @@
 
 </div>
 
+<h2>Credit Insights</h2>
+
+<div class="grid">
+
+    <div class="stat">
+        <h3>Total Outstanding Credit</h3>
+        <p>KES {{ outstanding_credit }}</p>
+    </div>
+
+    <div class="stat">
+        <h3>Customers Owing</h3>
+        <p>{{ customers_with_balances|length }}</p>
+    </div>
+
+</div>
+
+<div class="card">
+
+    <h2>Top Debtors</h2>
+
+    {% if top_debtors %}
+        <ul>
+
+            {% for customer in top_debtors %}
+
+                <li>
+                    {{ customer.name }}
+                    -
+                    KES {{ customer.outstanding_balance }}
+                </li>
+
+            {% endfor %}
+
+        </ul>
+
+    {% else %}
+
+        <p>No outstanding balances.</p>
+
+    {% endif %}
+
+</div>
+
 <div class="grid">
 
     <div class="stat">
