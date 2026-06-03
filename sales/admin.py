@@ -1,9 +1,15 @@
 from django.contrib import admin
 from .models import Sale, Customer, CreditPayment, SaleItem
+from .models import SaleItem
 
+class SaleItemInline(admin.TabularInline):
+    model = SaleItem
+    extra = 1
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
+
+    inlines = [SaleItemInline]
 
     list_display = (
         'receipt_number',
@@ -49,15 +55,4 @@ class CreditPaymentAdmin(admin.ModelAdmin):
 
     search_fields = (
         'customer__name',
-    )
-
-@admin.register(SaleItem)
-class SaleItemAdmin(admin.ModelAdmin):
-
-    list_display = (
-        'sale',
-        'product',
-        'quantity',
-        'selling_price',
-        'total',
     )

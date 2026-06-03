@@ -137,7 +137,24 @@ class SaleItem(models.Model):
         return self.quantity * self.selling_price
 
     def profit(self):
-        return (self.selling_price - self.product.buying_price) * self.quantity
+        return (
+            self.selling_price - self.product.buying_price
+        ) * self.quantity
+
+    def save(self, *args, **kwargs):
+
+        is_new = self.pk is None
+
+        super().save(*args, **kwargs)
+
+        if is_new:
+
+            StockMovement.objects.create(
+                product=self.product,
+                movement_type='OUT',
+                quantity=self.quantity,
+                note=f'Sold on receipt {self.sale.receipt_number}'
+            )
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
