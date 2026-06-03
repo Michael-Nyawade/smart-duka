@@ -1,6 +1,20 @@
 from django.db import models
 from inventory.models import Product, StockMovement
 
+class Customer(models.Model):
+    name = models.CharField(max_length=100)
+
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.name
 
 class Sale(models.Model):
 
@@ -14,6 +28,14 @@ class Sale(models.Model):
         Product,
         on_delete=models.CASCADE,
         related_name='sales'
+    )
+
+    customer = models.ForeignKey(
+    Customer,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name='sales'
     )
 
     quantity = models.PositiveIntegerField()
