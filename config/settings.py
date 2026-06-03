@@ -40,7 +40,7 @@ INSTALLED_APPS = [
 
     'inventory',
     'dashboard',
-    'sales',
+    'sales.apps.SalesConfig',
 ]
 
 MIDDLEWARE = [

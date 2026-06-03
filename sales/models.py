@@ -141,20 +141,36 @@ class SaleItem(models.Model):
             self.selling_price - self.product.buying_price
         ) * self.quantity
 
+    def apply_stock_change(self, old_quantity=0, new_quantity=0):
+
+        difference = new_quantity - old_quantity
+
+        if difference == 0:
+            return
+
+        StockMovement.objects.create(
+            product=self.product,
+            movement_type='OUT' if difference > 0 else 'IN',
+            quantity=abs(difference),
+            note=f'Inventory update for receipt {self.sale.receipt_number}'
+        )
+
     def save(self, *args, **kwargs):
 
         is_new = self.pk is None
 
+        if not is_new:
+            old = SaleItem.objects.get(pk=self.pk)
+            old_qty = old.quantity
+        else:
+            old_qty = 0
+
         super().save(*args, **kwargs)
 
-        if is_new:
-
-            StockMovement.objects.create(
-                product=self.product,
-                movement_type='OUT',
-                quantity=self.quantity,
-                note=f'Sold on receipt {self.sale.receipt_number}'
-            )
+        self.apply_stock_change(
+            old_quantity=old_qty,
+            new_quantity=self.quantity
+        )
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
