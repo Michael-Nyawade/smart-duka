@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt {{ sale.receipt_number }}</title>
+</head>
+<body>
+
+    <h1>SmartDuka Receipt</h1>
+
+    <h3>Receipt #: {{ sale.receipt_number }}</h3>
+    <p>Date: {{ sale.created_at }}</p>
+
+    <hr>
+
+    <p><strong>Product:</strong> {{ sale.product.name }}</p>
+    <p><strong>Quantity:</strong> {{ sale.quantity }}</p>
+    <p><strong>Unit Price:</strong> {{ sale.selling_price }}</p>
+
+    <hr>
+
+    <p><strong>Total:</strong> {{ sale.total_amount }}</p>
+    <p><strong>Profit:</strong> {{ sale.profit }}</p>
+
+    <p><strong>Payment Method:</strong> {{ sale.payment_method }}</p>
+
+    {% if sale.customer %}
+        <p><strong>Customer:</strong> {{ sale.customer.name }}</p>
+    {% endif %}
+
+</body>
+</html>
