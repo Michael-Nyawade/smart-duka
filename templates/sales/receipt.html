@@ -2,30 +2,147 @@
 <html>
 <head>
     <title>Receipt {{ sale.receipt_number }}</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .receipt {
+            background: white;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .meta {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .line {
+            border-top: 1px dashed #ccc;
+            margin: 15px 0;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+            font-size: 12px;
+        }
+
+        .print-btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px;
+            background: black;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        @media print {
+            .print-btn {
+                display: none;
+            }
+
+            body {
+                background: white;
+            }
+
+            .receipt {
+                box-shadow: none;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-    <h1>SmartDuka Receipt</h1>
+<div class="receipt">
 
-    <h3>Receipt #: {{ sale.receipt_number }}</h3>
-    <p>Date: {{ sale.created_at }}</p>
+    <h1>SmartDuka</h1>
+    <div class="meta">
+        Receipt #: {{ sale.receipt_number }} <br>
+        {{ sale.created_at }}
+    </div>
 
-    <hr>
+    <div class="line"></div>
 
-    <p><strong>Product:</strong> {{ sale.product.name }}</p>
-    <p><strong>Quantity:</strong> {{ sale.quantity }}</p>
-    <p><strong>Unit Price:</strong> {{ sale.selling_price }}</p>
+    <div class="row">
+        <div class="label">Product</div>
+        <div>{{ sale.product.name }}</div>
+    </div>
 
-    <hr>
+    <div class="row">
+        <div class="label">Quantity</div>
+        <div>{{ sale.quantity }}</div>
+    </div>
 
-    <p><strong>Total:</strong> {{ sale.total_amount }}</p>
-    <p><strong>Profit:</strong> {{ sale.profit }}</p>
+    <div class="row">
+        <div class="label">Unit Price</div>
+        <div>{{ sale.selling_price }}</div>
+    </div>
 
-    <p><strong>Payment Method:</strong> {{ sale.payment_method }}</p>
+    <div class="line"></div>
+
+    <div class="row total">
+        <div>Total:</div>
+        <div>KES {{ sale.total_amount }}</div>
+    </div>
+
+    <div class="row">
+        <div class="label">Profit</div>
+        <div>KES {{ sale.profit }}</div>
+    </div>
+
+    <div class="row">
+        <div class="label">Payment</div>
+        <div>{{ sale.payment_method }}</div>
+    </div>
 
     {% if sale.customer %}
-        <p><strong>Customer:</strong> {{ sale.customer.name }}</p>
+    <div class="row">
+        <div class="label">Customer</div>
+        <div>{{ sale.customer.name }}</div>
+    </div>
     {% endif %}
+
+    <a href="#" class="print-btn" onclick="window.print()">Print Receipt</a>
+
+    <div class="footer">
+        Thank you for shopping with SmartDuka
+    </div>
+
+</div>
 
 </body>
 </html>
