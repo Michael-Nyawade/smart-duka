@@ -13,8 +13,55 @@ class Customer(models.Model):
         auto_now_add=True
     )
 
+    def total_credit_sales(self):
+
+        return sum(
+            sale.total_amount()
+            for sale in self.sales.filter(
+                payment_method='CREDIT'
+            )
+        )
+
+    def total_payments(self):
+
+        return sum(
+            payment.amount
+            for payment in self.credit_payments.all()
+        )
+
+    def outstanding_balance(self):
+
+        return (
+            self.total_credit_sales()
+            - self.total_payments()
+        )
+
     def __str__(self):
         return self.name
+
+class CreditPayment(models.Model):
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name='credit_payments'
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    notes = models.TextField(
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.customer.name} - {self.amount}"
 
 class Sale(models.Model):
 

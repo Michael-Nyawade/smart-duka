@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Sale, Customer
+from .models import Sale, Customer, CreditPayment
 
 
 @admin.register(Sale)
@@ -31,10 +31,26 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'phone_number',
+        'total_credit_sales',
+        'total_payments',
+        'outstanding_balance',
         'created_at',
     )
 
     search_fields = (
         'name',
         'phone_number',
+    )
+
+@admin.register(CreditPayment)
+class CreditPaymentAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'customer',
+        'amount',
+        'created_at',
+    )
+
+    search_fields = (
+        'customer__name',
     )
