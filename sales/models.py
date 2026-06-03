@@ -1,5 +1,6 @@
 from django.db import models
 from inventory.models import Product, StockMovement
+import uuid
 
 class Customer(models.Model):
     name = models.CharField(max_length=100)
@@ -85,6 +86,13 @@ class Sale(models.Model):
     related_name='sales'
     )
 
+    receipt_number = models.CharField(
+        max_length=30,
+        unique=True,
+        blank=True,
+        null=True
+    )
+
     quantity = models.PositiveIntegerField()
 
     selling_price = models.DecimalField(
@@ -106,17 +114,24 @@ class Sale(models.Model):
         return (
             self.selling_price - self.product.buying_price
         ) * self.quantity
-
+    
+    def generate_receipt_number(self):
+        return uuid.uuid4().hex[:10].upper()
+    
     def save(self, *args, **kwargs):
+        if not self.receipt_number:
+            while True:
+                self.receipt_number = self.generate_receipt_number()
+                if not Sale.objects.filter(receipt_number=self.receipt_number).exists():
+                    break
 
         if not self.pk:
-
             StockMovement.objects.create(
                 product=self.product,
                 movement_type='OUT',
                 quantity=self.quantity,
                 note='Product sold'
-            )
+                )
 
         super().save(*args, **kwargs)
 

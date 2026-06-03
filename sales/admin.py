@@ -6,6 +6,7 @@ from .models import Sale, Customer, CreditPayment
 class SaleAdmin(admin.ModelAdmin):
 
     list_display = (
+        'receipt_number',
         'product',
         'customer',
         'quantity',
