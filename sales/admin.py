@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Sale, Customer, CreditPayment
+from .models import Sale, Customer, CreditPayment, SaleItem
 
 
 @admin.register(Sale)
@@ -7,13 +7,8 @@ class SaleAdmin(admin.ModelAdmin):
 
     list_display = (
         'receipt_number',
-        'product',
         'customer',
-        'quantity',
-        'selling_price',
         'payment_method',
-        'total_amount',
-        'profit',
         'created_at',
     )
 
@@ -54,4 +49,15 @@ class CreditPaymentAdmin(admin.ModelAdmin):
 
     search_fields = (
         'customer__name',
+    )
+
+@admin.register(SaleItem)
+class SaleItemAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'sale',
+        'product',
+        'quantity',
+        'selling_price',
+        'total',
     )

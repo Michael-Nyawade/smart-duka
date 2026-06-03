@@ -97,20 +97,12 @@
 
     <div class="line"></div>
 
+    {% for item in sale.items.all %}
     <div class="row">
-        <div class="label">Product</div>
-        <div>{{ sale.product.name }}</div>
+        <div class="label">{{ item.product.name }} (x{{ item.quantity }})</div>
+        <div>KES {{ item.total }}</div>
     </div>
-
-    <div class="row">
-        <div class="label">Quantity</div>
-        <div>{{ sale.quantity }}</div>
-    </div>
-
-    <div class="row">
-        <div class="label">Unit Price</div>
-        <div>{{ sale.selling_price }}</div>
-    </div>
+    {% endfor %}
 
     <div class="line"></div>
 

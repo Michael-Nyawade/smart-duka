@@ -72,18 +72,12 @@ class Sale(models.Model):
         ('CREDIT', 'Credit'),
     )
 
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name='sales'
-    )
-
     customer = models.ForeignKey(
-    Customer,
-    on_delete=models.SET_NULL,
-    null=True,
-    blank=True,
-    related_name='sales'
+        Customer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sales'
     )
 
     receipt_number = models.CharField(
@@ -93,13 +87,6 @@ class Sale(models.Model):
         null=True
     )
 
-    quantity = models.PositiveIntegerField()
-
-    selling_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
-
     payment_method = models.CharField(
         max_length=10,
         choices=PAYMENT_METHODS
@@ -107,33 +94,50 @@ class Sale(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def total_amount(self):
-        return self.quantity * self.selling_price
-
-    def profit(self):
-        return (
-            self.selling_price - self.product.buying_price
-        ) * self.quantity
-    
     def generate_receipt_number(self):
         return uuid.uuid4().hex[:10].upper()
-    
-    def save(self, *args, **kwargs):
-        if not self.receipt_number:
-            while True:
-                self.receipt_number = self.generate_receipt_number()
-                if not Sale.objects.filter(receipt_number=self.receipt_number).exists():
-                    break
 
-        if not self.pk:
-            StockMovement.objects.create(
-                product=self.product,
-                movement_type='OUT',
-                quantity=self.quantity,
-                note='Product sold'
-                )
+    def save(self, *args, **kwargs):
+
+        if not self.receipt_number:
+            self.receipt_number = self.generate_receipt_number()
 
         super().save(*args, **kwargs)
 
+    def total_amount(self):
+        return sum(item.total() for item in self.items.all())
+
+    def profit(self):
+        return sum(item.profit() for item in self.items.all())
+
     def __str__(self):
-        return f"{self.product.name} - {self.quantity}"
+        return self.receipt_number or "Sale"
+
+class SaleItem(models.Model):
+
+    sale = models.ForeignKey(
+        'Sale',
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.PositiveIntegerField()
+
+    selling_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    def total(self):
+        return self.quantity * self.selling_price
+
+    def profit(self):
+        return (self.selling_price - self.product.buying_price) * self.quantity
+
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"
