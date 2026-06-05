@@ -25,4 +25,28 @@
 
 <hr>
 
-<h3>Cart (coming soon)</h3>
+<h3>Cart</h3>
+
+{% if cart %}
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Total</th>
+        </tr>
+
+        {% for key, item in cart.items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.price }}</td>
+            <td>{{ item.qty|floatformat:2|add:"0" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h4>Total: {{ total }}</h4>
+{% else %}
+    <p>Cart is empty</p>
+{% endif %}
