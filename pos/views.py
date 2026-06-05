@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 from inventory.models import Product
 from sales.models import Customer, Sale, SaleItem
 
@@ -146,3 +147,30 @@ def decrease_qty(request, product_id):
 
     request.session['cart'] = cart
     return redirect('pos_home')
+
+def api_add_to_cart(request):
+
+    product_id = request.POST.get('product_id')
+
+    product = Product.objects.get(id=product_id)
+
+    cart = request.session.get('cart', {})
+    pid = str(product_id)
+
+    if pid in cart:
+        cart[pid]['qty'] += 1
+    else:
+        cart[pid] = {
+            'name': product.name,
+            'qty': 1,
+            'price': float(product.selling_price),
+        }
+
+    request.session['cart'] = cart
+
+    total = sum(item['qty'] * item['price'] for item in cart.values())
+
+    return JsonResponse({
+        'cart': cart,
+        'total': total
+    })
