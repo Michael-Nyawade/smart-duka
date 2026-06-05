@@ -1,67 +1,71 @@
 <h1>SmartDuka POS</h1>
 
-<form method="post">
-    {% csrf_token %}
+<div style="display: flex; gap: 30px;">
 
-    <label>Product:</label>
-    <select name="product">
-        <option value="">-- select product --</option>
-        {% for product in products %}
-            <option value="{{ product.id }}">
-                {{ product.name }} (Stock: {{ product.stock_quantity }})
-            </option>
-        {% endfor %}
-    </select>
+    <!-- PRODUCT GRID -->
+    <div style="width: 60%;">
+        <h3>Products</h3>
 
-    <br><br>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
 
-    <label>Quantity:</label>
-    <input type="number" name="quantity" value="1">
+            {% for product in products %}
+                <form method="post" style="border: 1px solid #ccc; padding: 10px;">
+                    {% csrf_token %}
 
-    <br><br>
+                    <h4>{{ product.name }}</h4>
+                    <p>Stock: {{ product.stock_quantity }}</p>
+                    <p>Price: {{ product.selling_price }}</p>
 
-    <button type="submit">Add to Cart</button>
-</form>
+                    <input type="hidden" name="product" value="{{ product.id }}">
+                    <input type="hidden" name="quantity" value="1">
 
-<hr>
+                    <button type="submit">
+                        Add (+1)
+                    </button>
+                </form>
+            {% endfor %}
 
-<h3>Cart</h3>
+        </div>
+    </div>
 
-{% if cart %}
-<table border="1" cellpadding="5">
-    <tr>
-        <th>Product</th>
-        <th>Qty</th>
-        <th>Price</th>
-        <th>Total</th>
-        <th>Action</th>
-    </tr>
+    <!-- CART -->
+    <div style="width: 40%;">
+        <h3>Cart</h3>
 
-    {% for key, item in cart.items %}
-    <tr>
-        <td>{{ item.name }}</td>
-        <td>{{ item.qty }}</td>
-        <td>{{ item.price }}</td>
-        <td>{{ item.qty|floatformat:2 }}</td>
-        <td>
-            <a href="{% url 'remove_from_cart' key %}">
-                Remove
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+        {% if cart %}
+        <table border="1" cellpadding="5" width="100%">
+            <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Action</th>
+            </tr>
 
-<h4>Total: {{ total }}</h4>
+            {% for key, item in cart.items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.qty }}</td>
+                <td>
+                    <a href="{% url 'remove_from_cart' key %}">Remove</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
 
-<a href="{% url 'checkout' %}">
-    <button>Checkout</button>
-</a>
+        <h3>Total: {{ total }}</h3>
 
-<a href="{% url 'clear_cart' %}">
-    <button>Clear Cart</button>
-</a>
+        <a href="{% url 'checkout' %}">
+            <button style="width: 100%;">Checkout</button>
+        </a>
 
-{% else %}
-<p>Cart is empty</p>
-{% endif %}
+        <br><br>
+
+        <a href="{% url 'clear_cart' %}">
+            <button style="width: 100%;">Clear</button>
+        </a>
+
+        {% else %}
+            <p>Cart is empty</p>
+        {% endif %}
+    </div>
+
+</div>

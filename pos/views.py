@@ -14,22 +14,15 @@ def pos_home(request):
 
         product_id = request.POST.get('product')
 
-        # Quantity safety fix
-        try:
-            quantity = int(request.POST.get('quantity', 1))
-            if quantity < 1:
-                quantity = 1
-        except:
-            quantity = 1
-
         product = get_object_or_404(Product, id=product_id)
 
+        # Faster add-to-cart: always +1
         if product_id in cart:
-            cart[product_id]['qty'] += quantity
+            cart[product_id]['qty'] += 1
         else:
             cart[product_id] = {
                 'name': product.name,
-                'qty': quantity,
+                'qty': 1,
                 'price': float(product.selling_price),
             }
 
