@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.db import transaction
+import uuid
 from inventory.models import Product
-from sales.models import Customer, Sale, SaleItem
+from sales.models import Customer, Sale, SaleItem, CashierShift
 
 
 def pos_home(request):
@@ -49,18 +51,30 @@ def checkout(request):
     customers = Customer.objects.all()
     total = sum(item['qty'] * item['price'] for item in cart.values())
 
+    # Generate session lock token
+    request.session['checkout_token'] = str(uuid.uuid4())
+
     return render(request, 'pos/checkout.html', {
         'cart': cart,
         'customers': customers,
-        'total': total
+        'total': total,
+        'token': request.session['checkout_token']
     })
 
 
 @require_POST
+@transaction.atomic
 def process_checkout(request):
     cart = request.session.get('cart', {})
 
     if not cart:
+        return redirect('pos_home')
+
+    # Validate session lock token
+    token = request.POST.get('token')
+    session_token = request.session.get('checkout_token')
+
+    if not token or token != session_token:
         return redirect('pos_home')
 
     customer_id = request.POST.get('customer')
@@ -70,15 +84,19 @@ def process_checkout(request):
     if customer_id:
         customer = Customer.objects.get(id=customer_id)
 
-    # Create sale
+    # Get active cashier shift
+    shift = CashierShift.objects.filter(is_active=True).first()
+
+    # LOCKED TRANSACTION
     sale = Sale.objects.create(
         customer=customer,
-        payment_method=payment_method
+        payment_method=payment_method,
+        shift=shift,
+        created_by="system"
     )
 
-    # Create items
     for product_id, item in cart.items():
-        product = Product.objects.get(id=product_id)
+        product = Product.objects.select_for_update().get(id=product_id)
         SaleItem.objects.create(
             sale=sale,
             product=product,
@@ -86,8 +104,9 @@ def process_checkout(request):
             selling_price=item['price']
         )
 
-    # Clear cart
+    # Clear cart and reset token
     request.session['cart'] = {}
+    request.session['checkout_token'] = None
 
     return render(request, 'pos/receipt.html', {
         'sale': sale

@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import Sale, Customer, CreditPayment, SaleItem
-from .models import SaleItem
 
 class SaleItemInline(admin.TabularInline):
     model = SaleItem
@@ -27,6 +26,14 @@ class SaleAdmin(admin.ModelAdmin):
         'product__name',
     )
 
+    # Admin safety: disable delete and edit for completed sales
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
 
@@ -46,6 +53,7 @@ class CustomerAdmin(admin.ModelAdmin):
         'name',
         'phone_number',
     )
+
 
 @admin.register(CreditPayment)
 class CreditPaymentAdmin(admin.ModelAdmin):

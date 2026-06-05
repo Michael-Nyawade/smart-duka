@@ -17,6 +17,9 @@
 <form method="post" action="{% url 'process_checkout' %}">
     {% csrf_token %}
 
+    <!-- Hidden lock token -->
+    <input type="hidden" name="token" value="{{ request.session.checkout_token }}">
+
     <label>Customer (optional):</label>
     <select name="customer">
         <option value="">Walk-in</option>

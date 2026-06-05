@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 from datetime import timedelta
 
@@ -21,7 +21,7 @@ class Product(models.Model):
     )
 
     name = models.CharField(max_length=100)
-    sku = models.CharField(max_length=50, unique=True) # Stock Keeping Unit
+    sku = models.CharField(max_length=50, unique=True)  # Stock Keeping Unit
 
     buying_price = models.DecimalField(max_digits=10, decimal_places=2)
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -37,7 +37,7 @@ class Product(models.Model):
     def is_low_stock(self):
         return self.stock_quantity <= self.low_stock_threshold
 
-    # Dead stock detecttion
+    # Dead stock detection
     def is_dead_stock(self):
 
         latest_movement = self.stock_movements.order_by('-created_at').first()
@@ -48,9 +48,10 @@ class Product(models.Model):
         dead_stock_threshold = timezone.now() - timedelta(days=30)
 
         return latest_movement.created_at < dead_stock_threshold
-    
+
     def __str__(self):
         return self.name
+
 
 class StockMovement(models.Model):
 
@@ -76,24 +77,23 @@ class StockMovement(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Automatic stock update from stock movement
+    # Safe stock update with transaction and row-level locking
     def save(self, *args, **kwargs):
+        with transaction.atomic():
+            if not self.pk:
+                product = Product.objects.select_for_update().get(pk=self.product.pk)
 
-        if not self.pk:
+                if self.movement_type == 'OUT':
+                    if product.stock_quantity < self.quantity:
+                        raise ValueError("Insufficient stock")
+                    product.stock_quantity -= self.quantity
 
-            if self.movement_type == 'IN':
-                self.product.stock_quantity += self.quantity
+                elif self.movement_type == 'IN':
+                    product.stock_quantity += self.quantity
 
-            elif self.movement_type == 'OUT':
+                product.save()
 
-                if self.quantity > self.product.stock_quantity:
-                    raise ValueError("Not enough stock available.")
-
-                self.product.stock_quantity -= self.quantity
-
-            self.product.save()
-
-        super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.product.name} - {self.movement_type} - {self.quantity}"

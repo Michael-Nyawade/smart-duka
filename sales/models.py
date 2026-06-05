@@ -40,6 +40,7 @@ class Customer(models.Model):
     def __str__(self):
         return self.name
 
+
 class CreditPayment(models.Model):
 
     customer = models.ForeignKey(
@@ -63,6 +64,22 @@ class CreditPayment(models.Model):
 
     def __str__(self):
         return f"{self.customer.name} - {self.amount}"
+
+
+class CashierShift(models.Model):
+
+    user = models.CharField(max_length=100)
+    opened_at = models.DateTimeField(auto_now_add=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    opening_cash = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    closing_cash = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.opened_at}"
+
 
 class Sale(models.Model):
 
@@ -94,6 +111,16 @@ class Sale(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Link to active cashier shift
+    shift = models.ForeignKey(
+        CashierShift,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    # Audit safety field
+    created_by = models.CharField(max_length=100, default="system")
+
     def generate_receipt_number(self):
         return uuid.uuid4().hex[:10].upper()
 
@@ -112,6 +139,7 @@ class Sale(models.Model):
 
     def __str__(self):
         return self.receipt_number or "Sale"
+
 
 class SaleItem(models.Model):
 
