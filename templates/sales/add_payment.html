@@ -1,0 +1,25 @@
+<h1>Add Payment - {{ customer.name }}</h1>
+
+<p>Outstanding: {{ customer.outstanding_balance }}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Amount:</label>
+    <input type="number" name="amount" step="0.01" required>
+
+    <br><br>
+
+    <label>Notes:</label>
+    <textarea name="notes"></textarea>
+
+    <br><br>
+
+    <button type="submit">Save Payment</button>
+</form>
+
+<br>
+
+<a href="{% url 'customer_detail' customer.id %}">
+    Back to Customer
+</a>

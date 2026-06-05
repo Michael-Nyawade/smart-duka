@@ -6,6 +6,12 @@
 <p>Total Payments: {{ customer.total_payments }}</p>
 <p><strong>Outstanding: {{ customer.outstanding_balance }}</strong></p>
 
+<br>
+
+<a href="{% url 'add_payment' customer.id %}">
+    <button>Add Payment</button>
+</a>
+
 <hr>
 
 <h3>Sales</h3>

@@ -1,5 +1,5 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Sale, Customer
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Sale, Customer, CreditPayment
 
 
 def sale_receipt_view(request, receipt_number):
@@ -27,3 +27,24 @@ def customer_detail(request, pk):
     }
 
     return render(request, 'sales/customer_detail.html', context)
+
+
+def add_payment(request, pk):
+
+    customer = get_object_or_404(Customer, pk=pk)
+
+    if request.method == "POST":
+        amount = request.POST.get('amount')
+        notes = request.POST.get('notes', '')
+
+        CreditPayment.objects.create(
+            customer=customer,
+            amount=amount,
+            notes=notes
+        )
+
+        return redirect('customer_detail', pk=customer.id)
+
+    return render(request, 'sales/add_payment.html', {
+        'customer': customer
+    })
