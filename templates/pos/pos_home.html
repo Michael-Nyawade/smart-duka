@@ -6,6 +6,11 @@
     <label>Product:</label>
     <select name="product">
         <option value="">-- select product --</option>
+        {% for product in products %}
+            <option value="{{ product.id }}">
+                {{ product.name }} (Stock: {{ product.stock_quantity }})
+            </option>
+        {% endfor %}
     </select>
 
     <br><br>

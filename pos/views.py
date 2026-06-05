@@ -1,4 +1,12 @@
 from django.shortcuts import render
+from inventory.models import Product
 
 def pos_home(request):
-    return render(request, 'pos/pos_home.html')
+
+    products = Product.objects.all()
+
+    context = {
+        'products': products
+    }
+
+    return render(request, 'pos/pos_home.html', context)
