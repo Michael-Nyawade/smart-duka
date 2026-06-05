@@ -19,15 +19,14 @@ def get_daily_sales_summary():
 
     total_sales_count = today_sales.count()
 
-    total_revenue = today_sales.aggregate(
-        total=Sum(
-            F('quantity') * F('selling_price'),
-            output_field=DecimalField()
-        )
-    )['total'] or 0
+    total_revenue = sum(
+        sale.total_amount()
+        for sale in today_sales
+    )
 
     total_profit = sum(
-        sale.profit() for sale in today_sales
+        sale.profit()
+        for sale in today_sales
     )
 
     credit_sales_count = today_sales.filter(
