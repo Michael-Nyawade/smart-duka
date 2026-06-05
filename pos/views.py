@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
 from inventory.models import Product
-from sales.models import Sale, SaleItem
+from sales.models import Customer, Sale, SaleItem
 
 
 def pos_home(request):
@@ -48,12 +49,39 @@ def checkout(request):
     if not cart:
         return redirect('pos_home')
 
-    # 1. Create Sale
+    customers = Customer.objects.all()
+
+    total = sum(item['qty'] * item['price'] for item in cart.values())
+
+    return render(request, 'pos/checkout.html', {
+        'cart': cart,
+        'customers': customers,
+        'total': total
+    })
+
+
+@require_POST
+def process_checkout(request):
+
+    cart = request.session.get('cart', {})
+
+    if not cart:
+        return redirect('pos_home')
+
+    customer_id = request.POST.get('customer')
+    payment_method = request.POST.get('payment_method')
+
+    customer = None
+    if customer_id:
+        customer = Customer.objects.get(id=customer_id)
+
+    # Create sale
     sale = Sale.objects.create(
-        payment_method='CASH'
+        customer=customer,
+        payment_method=payment_method
     )
 
-    # 2. Create Sale Items
+    # Create items
     for product_id, item in cart.items():
 
         product = Product.objects.get(id=product_id)
@@ -65,7 +93,7 @@ def checkout(request):
             selling_price=item['price']
         )
 
-    # 3. Clear cart
+    # Clear cart
     request.session['cart'] = {}
 
     return render(request, 'pos/receipt.html', {
