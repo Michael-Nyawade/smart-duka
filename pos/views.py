@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.template.loader import render_to_string
 from inventory.models import Product
 from sales.models import Customer, Sale, SaleItem
 
@@ -8,13 +9,10 @@ from sales.models import Customer, Sale, SaleItem
 def pos_home(request):
 
     products = Product.objects.all()
-
     cart = request.session.get('cart', {})
 
     if request.method == 'POST':
-
         product_id = request.POST.get('product')
-
         product = get_object_or_404(Product, id=product_id)
 
         # Faster add-to-cart: always +1
@@ -28,7 +26,6 @@ def pos_home(request):
             }
 
         request.session['cart'] = cart
-
         return redirect('pos_home')
 
     # calculate total
@@ -44,14 +41,12 @@ def pos_home(request):
 
 
 def checkout(request):
-
     cart = request.session.get('cart', {})
 
     if not cart:
         return redirect('pos_home')
 
     customers = Customer.objects.all()
-
     total = sum(item['qty'] * item['price'] for item in cart.values())
 
     return render(request, 'pos/checkout.html', {
@@ -63,7 +58,6 @@ def checkout(request):
 
 @require_POST
 def process_checkout(request):
-
     cart = request.session.get('cart', {})
 
     if not cart:
@@ -84,9 +78,7 @@ def process_checkout(request):
 
     # Create items
     for product_id, item in cart.items():
-
         product = Product.objects.get(id=product_id)
-
         SaleItem.objects.create(
             sale=sale,
             product=product,
@@ -103,27 +95,22 @@ def process_checkout(request):
 
 
 def remove_from_cart(request, product_id):
-
     cart = request.session.get('cart', {})
-
     product_id = str(product_id)
 
     if product_id in cart:
         del cart[product_id]
 
     request.session['cart'] = cart
-
     return redirect('pos_home')
 
 
 def clear_cart(request):
-
     request.session['cart'] = {}
-
     return redirect('pos_home')
 
-def increase_qty(request, product_id):
 
+def increase_qty(request, product_id):
     cart = request.session.get('cart', {})
     pid = str(product_id)
 
@@ -135,23 +122,20 @@ def increase_qty(request, product_id):
 
 
 def decrease_qty(request, product_id):
-
     cart = request.session.get('cart', {})
     pid = str(product_id)
 
     if pid in cart:
         cart[pid]['qty'] -= 1
-
         if cart[pid]['qty'] <= 0:
             del cart[pid]
 
     request.session['cart'] = cart
     return redirect('pos_home')
 
+
 def api_add_to_cart(request):
-
     product_id = request.POST.get('product_id')
-
     product = Product.objects.get(id=product_id)
 
     cart = request.session.get('cart', {})
@@ -167,10 +151,47 @@ def api_add_to_cart(request):
         }
 
     request.session['cart'] = cart
-
     total = sum(item['qty'] * item['price'] for item in cart.values())
 
+    html = render_to_string(
+        "pos/cart_partial.html",
+        {"cart": cart, "total": total},
+        request=request
+    )
+
     return JsonResponse({
-        'cart': cart,
-        'total': total
+        "cart_html": html,
+        "total": total
+    })
+
+
+def api_update_cart(request):
+    product_id = request.POST.get('product_id')
+    action = request.POST.get('action')
+
+    cart = request.session.get('cart', {})
+    pid = str(product_id)
+
+    if pid not in cart:
+        return JsonResponse({'error': 'Item not in cart'})
+
+    if action == "increase":
+        cart[pid]['qty'] += 1
+    elif action == "decrease":
+        cart[pid]['qty'] -= 1
+        if cart[pid]['qty'] <= 0:
+            del cart[pid]
+
+    request.session['cart'] = cart
+    total = sum(item['qty'] * item['price'] for item in cart.values())
+
+    html = render_to_string(
+        "pos/cart_partial.html",
+        {"cart": cart, "total": total},
+        request=request
+    )
+
+    return JsonResponse({
+        "cart_html": html,
+        "total": total
     })

@@ -31,66 +31,33 @@
     <div style="padding: 15px; background: #f9f9f9; display: flex; flex-direction: column;">
         <h2>Cart</h2>
 
-        {% if cart %}
-        <div style="flex: 1; overflow-y: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr style="text-align: left; border-bottom: 1px solid #ccc;">
-                    <th>Item</th>
-                    <th>Qty</th>
-                    <th></th>
-                </tr>
-
-                {% for key, item in cart.items %}
-                <tr>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.qty }}</td>
-                    <td>
-                        <a href="{% url 'decrease_qty' key %}">➖</a>
-                        |
-                        <a href="{% url 'increase_qty' key %}">➕</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
+        <div id="cart-container">
+            {% include "pos/cart_partial.html" %}
         </div>
-
-        <div style="margin-top: auto;">
-            <h2>Total: <span id="total">{{ total }}</span></h2>
-
-            <a href="{% url 'checkout' %}">
-                <button style="
-                    width: 100%;
-                    padding: 15px;
-                    background: #000;
-                    color: white;
-                    font-size: 16px;
-                    border: none;
-                    margin-bottom: 10px;
-                ">
-                    CHECKOUT
-                </button>
-            </a>
-
-            <a href="{% url 'clear_cart' %}">
-                <button style="
-                    width: 100%;
-                    padding: 10px;
-                ">
-                    Clear Cart
-                </button>
-            </a>
-        </div>
-
-        {% else %}
-            <p>Cart is empty</p>
-        {% endif %}
     </div>
 
 </div>
 
 <script>
-function addToCart(productId) {
+function updateCart(productId, action) {
+    fetch("{% url 'api_update_cart' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: "product_id=" + productId + "&action=" + action
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("cart-container").innerHTML = data.cart_html;
+        document.getElementById("total").innerText = data.total;
+    });
+}
 
+
+// FAST ADD (grid products)
+function addToCart(productId) {
     fetch("{% url 'api_add_to_cart' %}", {
         method: "POST",
         headers: {
@@ -101,30 +68,20 @@ function addToCart(productId) {
     })
     .then(res => res.json())
     .then(data => {
-
-        // update total instantly
+        document.getElementById("cart-container").innerHTML = data.cart_html;
         document.getElementById("total").innerText = data.total;
-
-        // reload only cart section
-        location.reload(); 
     });
-
 }
-</script>
 
-<script>
-document.addEventListener("keydown", function(event) {
 
-    // Press "C" → checkout
-    if (event.key.toLowerCase() === "c") {
+// Keyboard shortcuts
+document.addEventListener("keydown", function(e) {
+    if (e.key.toLowerCase() === "c") {
         window.location.href = "{% url 'checkout' %}";
     }
-
-    // Press "X" → clear cart
-    if (event.key.toLowerCase() === "x") {
+    if (e.key.toLowerCase() === "x") {
         window.location.href = "{% url 'clear_cart' %}";
     }
-
 });
 </script>
 </body>
