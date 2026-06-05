@@ -1,0 +1,23 @@
+<h1>SmartDuka POS</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Product:</label>
+    <select name="product">
+        <option value="">-- select product --</option>
+    </select>
+
+    <br><br>
+
+    <label>Quantity:</label>
+    <input type="number" name="quantity" value="1">
+
+    <br><br>
+
+    <button type="submit">Add to Cart</button>
+</form>
+
+<hr>
+
+<h3>Cart (coming soon)</h3>
