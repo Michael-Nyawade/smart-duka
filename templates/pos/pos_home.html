@@ -47,6 +47,11 @@
     </table>
 
     <h4>Total: {{ total }}</h4>
+
+    <br>
+    <a href="{% url 'checkout' %}">
+        <button>Checkout</button>
+    </a>
 {% else %}
     <p>Cart is empty</p>
 {% endif %}

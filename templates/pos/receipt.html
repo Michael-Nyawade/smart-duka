@@ -1,0 +1,22 @@
+<h1>Sale Completed</h1>
+
+<h3>Receipt: {{ sale.receipt_number }}</h3>
+
+<hr>
+
+<h3>Items</h3>
+
+<ul>
+    {% for item in sale.items.all %}
+        <li>
+            {{ item.product.name }} x {{ item.quantity }}
+            = {{ item.total }}
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Total: {{ sale.total_amount }}</h3>
+
+<br>
+
+<a href="{% url 'pos_home' %}">New Sale</a>

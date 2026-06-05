@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from inventory.models import Product
+from sales.models import Sale, SaleItem
 
 
 def pos_home(request):
@@ -38,3 +39,35 @@ def pos_home(request):
     }
 
     return render(request, 'pos/pos_home.html', context)
+
+
+def checkout(request):
+
+    cart = request.session.get('cart', {})
+
+    if not cart:
+        return redirect('pos_home')
+
+    # 1. Create Sale
+    sale = Sale.objects.create(
+        payment_method='CASH'
+    )
+
+    # 2. Create Sale Items
+    for product_id, item in cart.items():
+
+        product = Product.objects.get(id=product_id)
+
+        SaleItem.objects.create(
+            sale=sale,
+            product=product,
+            quantity=item['qty'],
+            selling_price=item['price']
+        )
+
+    # 3. Clear cart
+    request.session['cart'] = {}
+
+    return render(request, 'pos/receipt.html', {
+        'sale': sale
+    })
