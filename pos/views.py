@@ -120,3 +120,29 @@ def clear_cart(request):
     request.session['cart'] = {}
 
     return redirect('pos_home')
+
+def increase_qty(request, product_id):
+
+    cart = request.session.get('cart', {})
+    pid = str(product_id)
+
+    if pid in cart:
+        cart[pid]['qty'] += 1
+
+    request.session['cart'] = cart
+    return redirect('pos_home')
+
+
+def decrease_qty(request, product_id):
+
+    cart = request.session.get('cart', {})
+    pid = str(product_id)
+
+    if pid in cart:
+        cart[pid]['qty'] -= 1
+
+        if cart[pid]['qty'] <= 0:
+            del cart[pid]
+
+    request.session['cart'] = cart
+    return redirect('pos_home')

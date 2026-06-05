@@ -1,10 +1,14 @@
-<h1>SmartDuka POS</h1>
+<body>
+<div style="
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    height: 100vh;
+    font-family: Arial;
+">
 
-<div style="display: flex; gap: 30px;">
-
-    <!-- PRODUCT GRID -->
-    <div style="width: 60%;">
-        <h3>Products</h3>
+    <!-- LEFT: PRODUCTS -->
+    <div style="padding: 15px; overflow-y: auto; border-right: 2px solid #ddd;">
+        <h2>Products</h2>
 
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
 
@@ -19,8 +23,15 @@
                     <input type="hidden" name="product" value="{{ product.id }}">
                     <input type="hidden" name="quantity" value="1">
 
-                    <button type="submit">
-                        Add (+1)
+                    <button type="submit" style="
+                        width: 100%;
+                        padding: 10px;
+                        background: #1f8f4a;
+                        color: white;
+                        border: none;
+                        cursor: pointer;
+                    ">
+                        + Add
                     </button>
                 </form>
             {% endfor %}
@@ -28,40 +39,59 @@
         </div>
     </div>
 
-    <!-- CART -->
-    <div style="width: 40%;">
-        <h3>Cart</h3>
+    <!-- RIGHT: CART -->
+    <div style="padding: 15px; background: #f9f9f9; display: flex; flex-direction: column;">
+        <h2>Cart</h2>
 
         {% if cart %}
-        <table border="1" cellpadding="5" width="100%">
-            <tr>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Action</th>
-            </tr>
+        <div style="flex: 1; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="text-align: left; border-bottom: 1px solid #ccc;">
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th></th>
+                </tr>
 
-            {% for key, item in cart.items %}
-            <tr>
-                <td>{{ item.name }}</td>
-                <td>{{ item.qty }}</td>
-                <td>
-                    <a href="{% url 'remove_from_cart' key %}">Remove</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+                {% for key, item in cart.items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.qty }}</td>
+                    <td>
+                        <a href="{% url 'decrease_qty' key %}">➖</a>
+                        |
+                        <a href="{% url 'increase_qty' key %}">➕</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
 
-        <h3>Total: {{ total }}</h3>
+        <div style="margin-top: auto;">
+            <h2>Total: {{ total }}</h2>
 
-        <a href="{% url 'checkout' %}">
-            <button style="width: 100%;">Checkout</button>
-        </a>
+            <a href="{% url 'checkout' %}">
+                <button style="
+                    width: 100%;
+                    padding: 15px;
+                    background: #000;
+                    color: white;
+                    font-size: 16px;
+                    border: none;
+                    margin-bottom: 10px;
+                ">
+                    CHECKOUT
+                </button>
+            </a>
 
-        <br><br>
-
-        <a href="{% url 'clear_cart' %}">
-            <button style="width: 100%;">Clear</button>
-        </a>
+            <a href="{% url 'clear_cart' %}">
+                <button style="
+                    width: 100%;
+                    padding: 10px;
+                ">
+                    Clear Cart
+                </button>
+            </a>
+        </div>
 
         {% else %}
             <p>Cart is empty</p>
@@ -69,3 +99,4 @@
     </div>
 
 </div>
+</body>
