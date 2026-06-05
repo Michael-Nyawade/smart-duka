@@ -1,0 +1,29 @@
+<h1>{{ customer.name }}</h1>
+
+<h3>Credit Summary</h3>
+
+<p>Total Credit Sales: {{ customer.total_credit_sales }}</p>
+<p>Total Payments: {{ customer.total_payments }}</p>
+<p><strong>Outstanding: {{ customer.outstanding_balance }}</strong></p>
+
+<hr>
+
+<h3>Sales</h3>
+<ul>
+    {% for sale in sales %}
+        <li>
+            {{ sale.receipt_number }} - {{ sale.total_amount }} - {{ sale.payment_method }}
+        </li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<h3>Payments</h3>
+<ul>
+    {% for payment in payments %}
+        <li>
+            {{ payment.amount }} - {{ payment.created_at }}
+        </li>
+    {% endfor %}
+</ul>

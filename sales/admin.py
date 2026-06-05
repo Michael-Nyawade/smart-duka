@@ -30,13 +30,16 @@ class SaleAdmin(admin.ModelAdmin):
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
 
+    def view_customer(self, obj):
+        from django.urls import reverse
+        return f"/sales/customers/{obj.id}/"
+    view_customer.short_description = "Profile"
+
     list_display = (
         'name',
         'phone_number',
-        'total_credit_sales',
-        'total_payments',
         'outstanding_balance',
-        'created_at',
+        'view_customer',
     )
 
     search_fields = (
