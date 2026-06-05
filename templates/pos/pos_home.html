@@ -28,30 +28,40 @@
 <h3>Cart</h3>
 
 {% if cart %}
-    <table border="1" cellpadding="5">
-        <tr>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Total</th>
-        </tr>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>Total</th>
+        <th>Action</th>
+    </tr>
 
-        {% for key, item in cart.items %}
-        <tr>
-            <td>{{ item.name }}</td>
-            <td>{{ item.qty }}</td>
-            <td>{{ item.price }}</td>
-            <td>{{ item.qty|floatformat:2|add:"0" }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    {% for key, item in cart.items %}
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.qty }}</td>
+        <td>{{ item.price }}</td>
+        <td>{{ item.qty|floatformat:2 }}</td>
+        <td>
+            <a href="{% url 'remove_from_cart' key %}">
+                Remove
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
 
-    <h4>Total: {{ total }}</h4>
+<h4>Total: {{ total }}</h4>
 
-    <br>
-    <a href="{% url 'checkout' %}">
-        <button>Checkout</button>
-    </a>
+<a href="{% url 'checkout' %}">
+    <button>Checkout</button>
+</a>
+
+<a href="{% url 'clear_cart' %}">
+    <button>Clear Cart</button>
+</a>
+
 {% else %}
-    <p>Cart is empty</p>
+<p>Cart is empty</p>
 {% endif %}

@@ -13,7 +13,14 @@ def pos_home(request):
     if request.method == 'POST':
 
         product_id = request.POST.get('product')
-        quantity = int(request.POST.get('quantity', 1))
+
+        # Quantity safety fix
+        try:
+            quantity = int(request.POST.get('quantity', 1))
+            if quantity < 1:
+                quantity = 1
+        except:
+            quantity = 1
 
         product = get_object_or_404(Product, id=product_id)
 
@@ -99,3 +106,24 @@ def process_checkout(request):
     return render(request, 'pos/receipt.html', {
         'sale': sale
     })
+
+
+def remove_from_cart(request, product_id):
+
+    cart = request.session.get('cart', {})
+
+    product_id = str(product_id)
+
+    if product_id in cart:
+        del cart[product_id]
+
+    request.session['cart'] = cart
+
+    return redirect('pos_home')
+
+
+def clear_cart(request):
+
+    request.session['cart'] = {}
+
+    return redirect('pos_home')
