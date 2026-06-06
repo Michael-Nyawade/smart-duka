@@ -53,6 +53,75 @@
 
     </div>
 
+    <!-- Top Products Section -->
+    <div class="card mt-4">
+        <div class="card-header">
+            Top Selling Products Today
+        </div>
+        <div class="card-body">
+
+            <ul class="list-group">
+                {% for item in top_products %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ item.product__name }}
+                        <span class="badge bg-primary">
+                            Qty: {{ item.total_qty }}
+                        </span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No sales yet today</li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+
+    <!-- Top Customers Section -->
+    <div class="card mt-4">
+        <div class="card-header">
+            Top Customers Today
+        </div>
+        <div class="card-body">
+
+            <ul class="list-group">
+                {% for c in top_customers %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ c.customer__name }}
+                        <span class="badge bg-success">
+                            {{ c.total_spent }}
+                        </span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No customer activity today</li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+
+    <!-- Hourly Sales Section -->
+    <div class="card mt-4">
+        <div class="card-header">
+            Hourly Sales Trend
+        </div>
+        <div class="card-body">
+
+            <ul class="list-group">
+                {% for h in hourly_sales %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        Hour {{ h.hour }}
+                        <span class="badge bg-dark">
+                            {{ h.total }} sales
+                        </span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No sales data yet</li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+
     <!-- Low Stock Section -->
     <div class="card mt-4">
         <div class="card-header">
