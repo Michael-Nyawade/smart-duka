@@ -1,0 +1,22 @@
+<h1>SmartDuka Dashboard</h1>
+
+<h2>Today Summary</h2>
+
+<p><strong>Total Transactions:</strong> {{ total_sales_count }}</p>
+<p><strong>Total Revenue:</strong> {{ total_revenue }}</p>
+<p><strong>Total Profit:</strong> {{ total_profit }}</p>
+<p><strong>Credit Sales:</strong> {{ total_credit }}</p>
+
+<hr>
+
+<h2>Low Stock Items</h2>
+
+<ul>
+    {% for product in low_stock_products %}
+        <li>
+            {{ product.name }} — Stock: {{ product.stock_quantity }}
+        </li>
+    {% empty %}
+        <li>No low stock items </li>
+    {% endfor %}
+</ul>

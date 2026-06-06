@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'inventory',
-    'dashboard',
     'sales.apps.SalesConfig',
     'pos',
     'core.apps.CoreConfig',
