@@ -1,8 +1,7 @@
-from django.shortcuts import render
-
-from django.utils import timezone
-from django.db.models import Sum, F
 from datetime import date
+
+from django.shortcuts import render
+from django.db.models import Sum, F, Count, ExpressionWrapper, DecimalField
 
 from core.utils import get_user_shop
 from sales.models import Sale, SaleItem
@@ -15,32 +14,46 @@ def dashboard_view(request):
 
     today = date.today()
 
-    # Sales today
+    # Base queryset (shop + today)
     sales_today = Sale.objects.filter(
         shop=shop,
         created_at__date=today
     )
 
+    # Total number of transactions
     total_sales_count = sales_today.count()
 
-    # Total revenue today
-    total_revenue = sum(
-        sale.total_amount() for sale in sales_today
-    )
+    # TOTAL REVENUE (DB-level aggregation)
+    total_revenue = SaleItem.objects.filter(
+        sale__shop=shop,
+        sale__created_at__date=today
+    ).aggregate(
+        total=Sum(F('quantity') * F('selling_price'))
+    )['total'] or 0
 
-    # Total profit today
-    total_profit = sum(
-        sale.profit() for sale in sales_today
-    )
+    # TOTAL PROFIT (DB-level aggregation)
+    total_profit = SaleItem.objects.filter(
+        sale__shop=shop,
+        sale__created_at__date=today
+    ).aggregate(
+        profit=Sum(
+            ExpressionWrapper(
+                (F('selling_price') - F('product__buying_price')) * F('quantity'),
+                output_field=DecimalField()
+            )
+        )
+    )['profit'] or 0
 
-    # Credit sales today
-    credit_sales = sales_today.filter(payment_method='CREDIT')
+    # CREDIT SALES TOTAL
+    total_credit = SaleItem.objects.filter(
+        sale__shop=shop,
+        sale__created_at__date=today,
+        sale__payment_method='CREDIT'
+    ).aggregate(
+        total=Sum(F('quantity') * F('selling_price'))
+    )['total'] or 0
 
-    total_credit = sum(
-        sale.total_amount() for sale in credit_sales
-    )
-
-    # Low stock products
+    # LOW STOCK PRODUCTS
     low_stock_products = Product.objects.filter(
         shop=shop,
         stock_quantity__lte=5
