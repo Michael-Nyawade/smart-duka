@@ -1,13 +1,14 @@
 from django.contrib import admin
-from .models import Sale, Customer, CreditPayment, SaleItem
+from .models import Sale, Customer, CreditPayment, SaleItem, CashierShift, AuditLog
+
 
 class SaleItemInline(admin.TabularInline):
     model = SaleItem
     extra = 1
 
+
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
-
     inlines = [SaleItemInline]
 
     list_display = (
@@ -23,10 +24,10 @@ class SaleAdmin(admin.ModelAdmin):
     )
 
     search_fields = (
-        'product__name',
+        'items__product__name',
     )
 
-    # Admin safety: disable delete and edit for completed sales
+    # Prevent editing or deleting sales
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -36,7 +37,6 @@ class SaleAdmin(admin.ModelAdmin):
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-
     def view_customer(self, obj):
         from django.urls import reverse
         return f"/sales/customers/{obj.id}/"
@@ -57,7 +57,6 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(CreditPayment)
 class CreditPaymentAdmin(admin.ModelAdmin):
-
     list_display = (
         'customer',
         'amount',
@@ -66,4 +65,32 @@ class CreditPaymentAdmin(admin.ModelAdmin):
 
     search_fields = (
         'customer__name',
+    )
+
+
+@admin.register(CashierShift)
+class CashierShiftAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'opened_at',
+        'closed_at',
+        'is_active',
+    )
+
+    search_fields = (
+        'user__username',
+    )
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'action',
+        'timestamp',
+    )
+
+    search_fields = (
+        'user__username',
+        'action',
     )

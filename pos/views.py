@@ -1,15 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.template.loader import render_to_string
 from django.db import transaction
 import uuid
 from inventory.models import Product
-from sales.models import Customer, Sale, SaleItem, CashierShift
+from sales.models import Customer, Sale, SaleItem, CashierShift, AuditLog
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
 def pos_home(request):
-
     products = Product.objects.all()
     cart = request.session.get('cart', {})
 
@@ -42,6 +43,7 @@ def pos_home(request):
     return render(request, 'pos/pos_home.html', context)
 
 
+@login_required
 def checkout(request):
     cart = request.session.get('cart', {})
 
@@ -62,6 +64,7 @@ def checkout(request):
     })
 
 
+@login_required
 @require_POST
 @transaction.atomic
 def process_checkout(request):
@@ -84,15 +87,22 @@ def process_checkout(request):
     if customer_id:
         customer = Customer.objects.get(id=customer_id)
 
-    # Get active cashier shift
-    shift = CashierShift.objects.filter(is_active=True).first()
+    # Get active cashier shift for this user
+    shift_id = request.session.get("shift_id")
+    shift = None
+    if shift_id:
+        shift = CashierShift.objects.filter(id=shift_id, is_active=True).first()
+
+    # Restrict role: prevent Cashier from deleting or restricted actions
+    if request.user.groups.filter(name="Cashier").exists() and payment_method == "DELETE":
+        return HttpResponseForbidden("Not allowed")
 
     # LOCKED TRANSACTION
     sale = Sale.objects.create(
         customer=customer,
         payment_method=payment_method,
         shift=shift,
-        created_by="system"
+        created_by=request.user
     )
 
     for product_id, item in cart.items():
@@ -103,6 +113,12 @@ def process_checkout(request):
             quantity=item['qty'],
             selling_price=item['price']
         )
+
+    # Audit log entry
+    AuditLog.objects.create(
+        user=request.user,
+        action=f"Created sale {sale.receipt_number}"
+    )
 
     # Clear cart and reset token
     request.session['cart'] = {}
