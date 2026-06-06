@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Category, Product, StockMovement
+from core.utils import get_user_shop
 
 # Register models
 @admin.register(Category)
@@ -45,8 +46,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     # Ensure new products are assigned to the current user's shop
     def save_model(self, request, obj, form, change):
-        if not change:  # Only set shop when creating a new product
-            obj.shop = request.user.shop
+        obj.shop = get_user_shop(request.user)
         super().save_model(request, obj, form, change)
 
 

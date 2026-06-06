@@ -7,11 +7,13 @@ import uuid
 from inventory.models import Product
 from sales.models import Customer, Sale, SaleItem, CashierShift, AuditLog
 from django.contrib.auth.decorators import login_required
+from core.utils import get_user_shop
 
 
 @login_required
 def pos_home(request):
-    products = Product.objects.all()
+    shop = get_user_shop(request.user)
+    products = Product.objects.filter(shop=shop)
     cart = request.session.get('cart', {})
 
     if request.method == 'POST':
