@@ -43,7 +43,7 @@ class ProductAdmin(admin.ModelAdmin):
     dead_stock_status.boolean = True
     dead_stock_status.short_description = 'Dead Stock'
 
-    # ✅ Ensure new products are assigned to the current user's shop
+    # Ensure new products are assigned to the current user's shop
     def save_model(self, request, obj, form, change):
         if not change:  # Only set shop when creating a new product
             obj.shop = request.user.shop
