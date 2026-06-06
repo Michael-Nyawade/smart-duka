@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from django.utils import timezone
 from datetime import timedelta
+from core.models import Shop
 
 
 class Category(models.Model):
@@ -14,6 +15,8 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=True)
+
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,

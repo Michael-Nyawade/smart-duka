@@ -26,7 +26,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'sku')
 
     # All stock changes happen through Stock Movements
-    readonly_fields = ('stock_quantity'),
+    readonly_fields = ('stock_quantity',)
 
     list_per_page = 20
     ordering = ('name',) 
@@ -37,12 +37,18 @@ class ProductAdmin(admin.ModelAdmin):
     low_stock_status.boolean = True
     low_stock_status.short_description = 'Low Stock'
 
-
     def dead_stock_status(self, obj):
         return obj.is_dead_stock()
 
     dead_stock_status.boolean = True
     dead_stock_status.short_description = 'Dead Stock'
+
+    # ✅ Ensure new products are assigned to the current user's shop
+    def save_model(self, request, obj, form, change):
+        if not change:  # Only set shop when creating a new product
+            obj.shop = request.user.shop
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(StockMovement)
 class StockMovement(admin.ModelAdmin):
