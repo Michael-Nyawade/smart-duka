@@ -2,6 +2,7 @@ from django.db import models, transaction
 from django.utils import timezone
 from datetime import timedelta
 from core.models import Shop
+from core.managers import ShopQuerySet
 
 
 class Category(models.Model):
@@ -34,15 +35,16 @@ class Product(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Enforce shop isolation
+    objects = ShopQuerySet.as_manager()
+
     def profit_per_item(self):
         return self.selling_price - self.buying_price
 
     def is_low_stock(self):
         return self.stock_quantity <= self.low_stock_threshold
 
-    # Dead stock detection
     def is_dead_stock(self):
-
         latest_movement = self.stock_movements.order_by('-created_at').first()
 
         if not latest_movement:
@@ -69,6 +71,12 @@ class StockMovement(models.Model):
         related_name='stock_movements'
     )
 
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.CASCADE,
+        null=True
+    )
+
     movement_type = models.CharField(
         max_length=3,
         choices=MOVEMENT_TYPES
@@ -80,7 +88,9 @@ class StockMovement(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Safe stock update with transaction and row-level locking
+    # Enforce shop isolation
+    objects = ShopQuerySet.as_manager()
+
     def save(self, *args, **kwargs):
         with transaction.atomic():
             if not self.pk:

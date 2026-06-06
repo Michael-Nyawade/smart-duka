@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Sale, Customer, CreditPayment, SaleItem, CashierShift, AuditLog
+from core.utils import get_user_shop
 
 
 class SaleItemInline(admin.TabularInline):
@@ -27,7 +28,6 @@ class SaleAdmin(admin.ModelAdmin):
         'items__product__name',
     )
 
-    # Prevent editing or deleting sales
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -53,6 +53,12 @@ class CustomerAdmin(admin.ModelAdmin):
         'name',
         'phone_number',
     )
+
+    # Enforce shop assignment on save
+    def save_model(self, request, obj, form, change):
+        if not obj.shop:
+            obj.shop = get_user_shop(request.user)
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(CreditPayment)

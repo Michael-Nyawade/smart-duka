@@ -20,7 +20,6 @@ def pos_home(request):
         product_id = request.POST.get('product')
         product = get_object_or_404(Product, id=product_id)
 
-        # Faster add-to-cart: always +1
         if product_id in cart:
             cart[product_id]['qty'] += 1
         else:
@@ -33,7 +32,6 @@ def pos_home(request):
         request.session['cart'] = cart
         return redirect('pos_home')
 
-    # calculate total
     total = sum(item['qty'] * item['price'] for item in cart.values())
 
     context = {
@@ -55,7 +53,6 @@ def checkout(request):
     customers = Customer.objects.all()
     total = sum(item['qty'] * item['price'] for item in cart.values())
 
-    # Generate session lock token
     request.session['checkout_token'] = str(uuid.uuid4())
 
     return render(request, 'pos/checkout.html', {
@@ -75,7 +72,6 @@ def process_checkout(request):
     if not cart:
         return redirect('pos_home')
 
-    # Validate session lock token
     token = request.POST.get('token')
     session_token = request.session.get('checkout_token')
 
@@ -89,18 +85,18 @@ def process_checkout(request):
     if customer_id:
         customer = Customer.objects.get(id=customer_id)
 
-    # Get active cashier shift for this user
     shift_id = request.session.get("shift_id")
     shift = None
     if shift_id:
         shift = CashierShift.objects.filter(id=shift_id, is_active=True).first()
 
-    # Restrict role: prevent Cashier from deleting or restricted actions
     if request.user.groups.filter(name="Cashier").exists() and payment_method == "DELETE":
         return HttpResponseForbidden("Not allowed")
 
-    # LOCKED TRANSACTION
+    # Enforce shop assignment
+    shop = get_user_shop(request.user)
     sale = Sale.objects.create(
+        shop=shop,
         customer=customer,
         payment_method=payment_method,
         shift=shift,
@@ -116,13 +112,11 @@ def process_checkout(request):
             selling_price=item['price']
         )
 
-    # Audit log entry
     AuditLog.objects.create(
         user=request.user,
         action=f"Created sale {sale.receipt_number}"
     )
 
-    # Clear cart and reset token
     request.session['cart'] = {}
     request.session['checkout_token'] = None
 

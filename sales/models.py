@@ -2,6 +2,8 @@ from django.db import models
 from inventory.models import Product, StockMovement
 import uuid
 from django.conf import settings
+from core.models import Shop
+from core.managers import ShopQuerySet
 
 
 class Customer(models.Model):
@@ -15,6 +17,15 @@ class Customer(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True
     )
+
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.CASCADE,
+        null=True
+    )
+
+    # Enforce shop isolation
+    objects = ShopQuerySet.as_manager()
 
     def total_credit_sales(self):
         return sum(
@@ -65,7 +76,6 @@ class CreditPayment(models.Model):
 
 
 class CashierShift(models.Model):
-    # Link shift to actual User
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     opened_at = models.DateTimeField(auto_now_add=True)
     closed_at = models.DateTimeField(null=True, blank=True)
@@ -108,14 +118,12 @@ class Sale(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Link to active cashier shift
     shift = models.ForeignKey(
         CashierShift,
         on_delete=models.SET_NULL,
         null=True
     )
 
-    # Audit safety field — linked to User
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -123,6 +131,15 @@ class Sale(models.Model):
         blank=True,
         related_name="sales"
     )
+
+    shop = models.ForeignKey(
+        Shop,
+        on_delete=models.CASCADE,
+        null=True
+    )
+
+    # Enforce shop isolation
+    objects = ShopQuerySet.as_manager()
 
     def generate_receipt_number(self):
         return uuid.uuid4().hex[:10].upper()
@@ -174,7 +191,9 @@ class SaleItem(models.Model):
         if difference == 0:
             return
 
+        # Enforce shop assignment for StockMovement
         StockMovement.objects.create(
+            shop=self.sale.shop,
             product=self.product,
             movement_type='OUT' if difference > 0 else 'IN',
             quantity=abs(difference),
@@ -200,7 +219,6 @@ class SaleItem(models.Model):
         return f"{self.product.name} x {self.quantity}"
 
 
-# Audit Trail
 class AuditLog(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     action = models.CharField(max_length=255)
