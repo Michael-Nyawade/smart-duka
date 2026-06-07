@@ -150,6 +150,35 @@
         </div>
     </div>
 
+    <!-- Dead Stock Section -->
+    <div class="card mt-4 border-danger">
+        <div class="card-header bg-danger text-white">
+            🧱 Dead Stock (No sales in 30+ days)
+        </div>
+
+        <div class="card-body">
+
+            {% if dead_stock_products %}
+
+                <ul class="list-group">
+                    {% for product in dead_stock_products %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            {{ product.name }}
+
+                            <span class="badge bg-dark">
+                                Stock: {{ product.stock_quantity }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+            {% else %}
+                <p class="text-success">No dead stock 🎉</p>
+            {% endif %}
+
+        </div>
+    </div>
+
 </div>
 
 </body>

@@ -1,8 +1,9 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.shortcuts import render
-from django.db.models import Sum, F, Count, ExpressionWrapper, DecimalField
+from django.db.models import Sum, F, Count, ExpressionWrapper, DecimalField, Max
 from django.db.models.functions import ExtractHour
+from django.utils import timezone
 
 from core.utils import get_user_shop
 from sales.models import Sale, SaleItem
@@ -92,6 +93,23 @@ def dashboard_view(request):
         total=Count('id')
     ).order_by('hour')
 
+    # DEAD STOCK LOGIC
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+
+    dead_stock_products = Product.objects.filter(
+        shop=shop
+    ).annotate(
+        last_sold=Max('saleitem__sale__created_at')
+    ).filter(
+        last_sold__isnull=True
+    ) | Product.objects.filter(
+        shop=shop
+    ).annotate(
+        last_sold=Max('saleitem__sale__created_at')
+    ).filter(
+        last_sold__lt=thirty_days_ago
+    )
+
     context = {
         'total_sales_count': total_sales_count,
         'total_revenue': total_revenue,
@@ -104,6 +122,7 @@ def dashboard_view(request):
         'top_products': top_products,
         'top_customers': top_customers,
         'hourly_sales': hourly_sales,
+        'dead_stock_products': dead_stock_products,
     })
 
     return render(request, 'dashboard/dashboard.html', context)
