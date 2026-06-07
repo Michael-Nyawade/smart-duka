@@ -227,6 +227,7 @@ def api_update_cart(request):
         "total": total
     })
 
+
 # Partial view
 def pos_products_partial(request):
     shop = get_user_shop(request.user)
@@ -238,3 +239,26 @@ def pos_products_partial(request):
     )
 
     return HttpResponse(html)
+
+
+# POS search endpoint (FAST FILTER API)
+def pos_search_products(request):
+    shop = get_user_shop(request.user)
+    query = request.GET.get('q', '')
+
+    products = Product.objects.filter(
+        shop=shop,
+        name__icontains=query
+    )[:10]
+
+    data = [
+        {
+            'id': p.id,
+            'name': p.name,
+            'price': str(p.selling_price),
+            'stock': p.stock_quantity
+        }
+        for p in products
+    ]
+
+    return JsonResponse(data, safe=False)

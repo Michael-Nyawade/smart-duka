@@ -12,4 +12,5 @@ urlpatterns = [
     path('api/add-to-cart/', views.api_add_to_cart, name='api_add_to_cart'),
     path('api/cart/update/', views.api_update_cart, name='api_update_cart'),
     path('products/partial/', views.pos_products_partial, name='pos_products_partial'),
+    path('search/', views.pos_search_products, name='pos_search_products'),
 ]
