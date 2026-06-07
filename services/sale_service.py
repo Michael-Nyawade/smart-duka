@@ -1,7 +1,6 @@
 from django.db import transaction
 from sales.models import Sale, SaleItem
-from inventory.models import Product
-from services.stock_service import StockService
+from inventory.models import Product, StockMovement
 
 
 class SaleService:
@@ -34,9 +33,11 @@ class SaleService:
                 selling_price=item["price"]
             )
 
-            # STOCK UPDATE THROUGH SERVICE
-            StockService.decrease_stock(
+            # STOCK MOVEMENT HANDLES UPDATES SAFELY
+            StockMovement.objects.create(
+                shop=shop,
                 product=product,
+                movement_type='OUT',
                 quantity=item["qty"],
                 note=f"Sale {sale.receipt_number}"
             )
