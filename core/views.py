@@ -58,8 +58,20 @@ def dashboard_view(request):
     # LOW STOCK PRODUCTS
     low_stock_products = Product.objects.filter(
         shop=shop,
-        stock_quantity__lte=5
+        stock_quantity__lte=F('low_stock_threshold')
     )
+
+    # Reorder alerts count
+    low_stock_count = low_stock_products.count()
+
+    # Reorder suggestion logic
+    reorder_suggestions = []
+    for product in low_stock_products:
+        suggested_qty = product.reorder_level * 2 - product.stock_quantity
+        reorder_suggestions.append({
+            'product': product,
+            'suggested_qty': max(suggested_qty, 0)
+        })
 
     # Top Selling Products
     top_products = SaleItem.objects.filter(
@@ -116,6 +128,8 @@ def dashboard_view(request):
         'total_profit': total_profit,
         'total_credit': total_credit,
         'low_stock_products': low_stock_products,
+        'low_stock_count': low_stock_count,
+        'reorder_suggestions': reorder_suggestions,
     }
 
     context.update({

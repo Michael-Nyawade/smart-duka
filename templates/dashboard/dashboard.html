@@ -12,6 +12,13 @@
 
     <h2 class="mb-4">SmartDuka Dashboard</h2>
 
+    <!-- ALERT BANNER -->
+    {% if low_stock_count > 0 %}
+    <div class="alert alert-danger">
+        🚨 {{ low_stock_count }} product(s) need reordering!
+    </div>
+    {% endif %}
+
     <!-- KPI Cards -->
     <div class="row">
 
@@ -173,8 +180,30 @@
                 </ul>
 
             {% else %}
-                <p class="text-success">No dead stock 🎉</p>
+                <p class="text-success">No dead stock </p>
             {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Reorder Suggestions Section -->
+    <div class="card mt-4 border-warning">
+        <div class="card-header bg-warning">
+            Reorder Suggestions
+        </div>
+
+        <div class="card-body">
+
+            {% for item in reorder_suggestions %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span>{{ item.product.name }}</span>
+                    <span class="badge bg-dark">
+                        Reorder: {{ item.suggested_qty }}
+                    </span>
+                </div>
+            {% empty %}
+                <p>No reorder needed </p>
+            {% endfor %}
 
         </div>
     </div>
