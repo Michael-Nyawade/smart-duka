@@ -113,86 +113,49 @@ def process_checkout(request):
         return redirect('pos_home')
 
     token = request.POST.get('token')
-    session_token = request.session.get(
-        'checkout_token'
-    )
+    session_token = request.session.get('checkout_token')
 
     if not token or token != session_token:
         return redirect('pos_home')
 
     customer_id = request.POST.get('customer')
-    payment_method = request.POST.get(
-        'payment_method'
-    )
+    payment_method = request.POST.get('payment_method')
 
     customer = None
-
     if customer_id:
-        customer = Customer.objects.get(
-            id=customer_id
-        )
+        customer = Customer.objects.get(id=customer_id)
 
+    shift_id = request.session.get("shift_id")
     shift = None
-
-    shift_id = request.session.get(
-        'shift_id'
-    )
-
     if shift_id:
-        shift = CashierShift.objects.filter(
-            id=shift_id,
-            is_active=True
-        ).first()
+        shift = CashierShift.objects.filter(id=shift_id, is_active=True).first()
 
-    if (
-        request.user.groups.filter(
-            name='Cashier'
-        ).exists()
-        and payment_method == 'DELETE'
-    ):
-        return HttpResponseForbidden(
-            'Not allowed'
-        )
-    
-    # Enforce shop assignment
     shop = get_user_shop(request.user)
 
-    sale = Sale.objects.create(
+    from services.sale_service import SaleService
+
+    # Delegate sale creation to service
+    sale = SaleService.create_sale(
         shop=shop,
         customer=customer,
         payment_method=payment_method,
+        cart=cart,
         shift=shift,
-        created_by=request.user
+        user=request.user
     )
-
-    for product_id, item in cart.items():
-
-        product = Product.objects.select_for_update().get(
-            id=product_id
-        )
-
-        SaleItem.objects.create(
-            sale=sale,
-            product=product,
-            quantity=item['qty'],
-            selling_price=item['price']
-        )
 
     AuditLog.objects.create(
         user=request.user,
-        action=f'Created sale {sale.receipt_number}'
+        action=f"Created sale {sale.receipt_number}"
     )
 
+    # Clear session
     request.session['cart'] = {}
     request.session['checkout_token'] = None
 
-    return render(
-        request,
-        'pos/receipt.html',
-        {
-            'sale': sale
-        }
-    )
+    return render(request, 'pos/receipt.html', {
+        'sale': sale
+    })
 
 
 @login_required
