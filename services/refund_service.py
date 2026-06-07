@@ -3,7 +3,7 @@
 from django.db import transaction
 from sales.models import Sale, SaleItem
 from services.stock_service import StockService
-from sales.models import AuditLog
+from core.audit import log_action
 
 
 class RefundService:
@@ -24,14 +24,13 @@ class RefundService:
             items = items.filter(id__in=partial_items)
 
         for item in items:
-
             StockService.reverse_decrease_stock(
                 product=item.product,
                 quantity=item.quantity,
                 note=f"Refund for sale {sale.receipt_number}"
             )
 
-        AuditLog.objects.create(
+        log_action(
             user=user,
             action=f"Refund processed for sale {sale.receipt_number}"
         )
