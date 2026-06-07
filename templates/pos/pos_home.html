@@ -51,6 +51,7 @@
                             hx-target="#cart-box"
                             hx-swap="innerHTML"
                         >
+                            {% csrf_token %}
                             <input type="hidden" name="product_id" value="{{ product.id }}">
                             <button type="submit" class="btn btn-sm btn-primary mt-2">
                                 Add {{ product.name }}
@@ -149,6 +150,7 @@ searchInput.addEventListener("input", function () {
                 form.setAttribute("hx-target", "#cart-box");
                 form.setAttribute("hx-swap", "innerHTML");
                 form.innerHTML = `
+                    {% csrf_token %}
                     <input type="hidden" name="product_id" value="${product.id}">
                 `;
                 document.body.appendChild(form);

@@ -16,6 +16,7 @@ urlpatterns = [
     path('cart/decrease/<int:product_id>/', views.decrease_qty, name='decrease_qty'),
 
     # HTMX Cart
+    path("checkout/", views.checkout, name="checkout"),
     path("htmx/cart/add/", views.htmx_add_to_cart, name="htmx_add_to_cart"),
 
     # Product utilities
