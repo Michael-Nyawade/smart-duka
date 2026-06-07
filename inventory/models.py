@@ -31,7 +31,8 @@ class Product(models.Model):
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
 
     stock_quantity = models.PositiveIntegerField(default=0)
-    low_stock_threshold = models.PositiveIntegerField(default=5)
+    low_stock_threshold = models.PositiveIntegerField(default=10)
+    reorder_level = models.PositiveIntegerField(default=20)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -51,8 +52,10 @@ class Product(models.Model):
             return True
 
         dead_stock_threshold = timezone.now() - timedelta(days=30)
-
         return latest_movement.created_at < dead_stock_threshold
+
+    def needs_reorder(self):
+        return self.stock_quantity <= self.reorder_level
 
     def __str__(self):
         return self.name

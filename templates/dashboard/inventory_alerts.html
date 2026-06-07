@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Inventory Alerts</h2>
+
+<h3>⚠️ Low Stock</h3>
+<ul>
+    {% for p in low_stock %}
+        <li>{{ p.name }} - {{ p.stock_quantity }}</li>
+    {% empty %}
+        <li>None</li>
+    {% endfor %}
+</ul>
+
+<h3>🚨 Out of Stock</h3>
+<ul>
+    {% for p in out_of_stock %}
+        <li>{{ p.name }}</li>
+    {% empty %}
+        <li>None</li>
+    {% endfor %}
+</ul>
+
+<h3>🔁 Reorder Candidates</h3>
+<ul>
+    {% for p in reorder %}
+        <li>{{ p.name }} - Stock: {{ p.stock_quantity }} (Reorder level: {{ p.reorder_level }})</li>
+    {% empty %}
+        <li>None</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

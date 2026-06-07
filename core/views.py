@@ -8,6 +8,7 @@ from django.utils import timezone
 from core.utils import get_user_shop
 from sales.models import Sale, SaleItem
 from inventory.models import Product
+from inventory.services import InventoryIntelligence
 
 
 def dashboard_view(request):
@@ -140,3 +141,18 @@ def dashboard_view(request):
     })
 
     return render(request, 'dashboard/dashboard.html', context)
+
+
+def inventory_alerts(request):
+
+    shop = get_user_shop(request.user)
+
+    low_stock = InventoryIntelligence.get_low_stock_products(shop)
+    out_of_stock = InventoryIntelligence.get_out_of_stock(shop)
+    reorder = InventoryIntelligence.get_reorder_candidates(shop)
+
+    return render(request, "dashboard/inventory_alerts.html", {
+        "low_stock": low_stock,
+        "out_of_stock": out_of_stock,
+        "reorder": reorder,
+    })
