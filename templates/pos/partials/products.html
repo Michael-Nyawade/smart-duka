@@ -1,0 +1,9 @@
+{% for product in products %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <strong>{{ product.name }}</strong><br>
+            Stock: {{ product.stock_quantity }}<br>
+            Price: {{ product.selling_price }}
+        </div>
+    </div>
+{% endfor %}

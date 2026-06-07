@@ -11,4 +11,5 @@ urlpatterns = [
     path('cart/decrease/<int:product_id>/', views.decrease_qty, name='decrease_qty'),
     path('api/add-to-cart/', views.api_add_to_cart, name='api_add_to_cart'),
     path('api/cart/update/', views.api_update_cart, name='api_update_cart'),
+    path('products/partial/', views.pos_products_partial, name='pos_products_partial'),
 ]

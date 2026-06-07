@@ -10,20 +10,13 @@
     <div style="padding: 15px; overflow-y: auto; border-right: 2px solid #ddd;">
         <h2>Products</h2>
 
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-
-            {% for product in products %}
-                <div onclick="addToCart('{{ product.id }}')" style="
-                    border: 1px solid #ddd;
-                    padding: 10px;
-                    cursor: pointer;
-                ">
-                    <h4>{{ product.name }}</h4>
-                    <p>Stock: {{ product.stock_quantity }}</p>
-                    <p>Selling Price: {{ product.selling_price }}</p>
-                </div>
-            {% endfor %}
-
+        <div
+            id="product-list"
+            hx-get="/pos/products/partial/"
+            hx-trigger="load, every 5s"
+            hx-swap="innerHTML"
+        >
+            Loading products...
         </div>
     </div>
 
@@ -84,4 +77,5 @@ document.addEventListener("keydown", function(e) {
     }
 });
 </script>
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </body>

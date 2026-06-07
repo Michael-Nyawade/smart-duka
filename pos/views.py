@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 from django.template.loader import render_to_string
 from django.db import transaction
 import uuid
@@ -226,3 +226,15 @@ def api_update_cart(request):
         "cart_html": html,
         "total": total
     })
+
+# Partial view
+def pos_products_partial(request):
+    shop = get_user_shop(request.user)
+    products = Product.objects.filter(shop=shop)
+
+    html = render_to_string(
+        'pos/partials/products.html',
+        {'products': products}
+    )
+
+    return HttpResponse(html)
