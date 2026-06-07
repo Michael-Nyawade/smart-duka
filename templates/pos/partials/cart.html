@@ -1,0 +1,27 @@
+<h3>Cart</h3>
+
+{% if cart %}
+
+<table width="100%">
+    <tr>
+        <th>Item</th>
+        <th>Qty</th>
+    </tr>
+
+    {% for key, item in cart.items %}
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.qty }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>Total: {{ total }}</h3>
+
+<a href="{% url 'checkout' %}">
+    <button>Checkout</button>
+</a>
+
+{% else %}
+<p>Cart is empty</p>
+{% endif %}

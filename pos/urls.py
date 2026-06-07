@@ -18,6 +18,7 @@ urlpatterns = [
     # AJAX Cart API
     path('api/add-to-cart/', views.api_add_to_cart, name='api_add_to_cart'),
     path('api/cart/update/', views.api_update_cart, name='api_update_cart'),
+    path("htmx/cart/add/", views.htmx_add_to_cart, name="htmx_add_to_cart"),
 
     # Product utilities
     path('products/partial/', views.pos_products_partial, name='pos_products_partial'),

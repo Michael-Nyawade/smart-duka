@@ -236,3 +236,34 @@ def refund_sale(request, sale_id):
     )
 
     return redirect('pos_home')
+
+
+# HTMX cart endpoint
+@login_required
+@require_POST
+def htmx_add_to_cart(request):
+    from inventory.models import Product
+
+    product_id = request.POST.get("product_id")
+    product = Product.objects.get(id=product_id)
+
+    cart = request.session.get("cart", {})
+    pid = str(product_id)
+
+    if pid in cart:
+        cart[pid]["qty"] += 1
+    else:
+        cart[pid] = {
+            "name": product.name,
+            "qty": 1,
+            "price": float(product.selling_price),
+        }
+
+    request.session["cart"] = cart
+
+    total = sum(i["qty"] * i["price"] for i in cart.values())
+
+    return render(request, "pos/partials/cart.html", {
+        "cart": cart,
+        "total": total,
+    })
