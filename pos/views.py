@@ -21,23 +21,12 @@ from core.utils import get_user_shop, for_current_shop
 
 @login_required
 def pos_home(request):
-
-    products = for_current_shop(
-        Product.objects.all(),
-        request.user
-    )
-
+    products = for_current_shop(Product.objects.all(), request.user)
     cart = request.session.get('cart', {})
 
     if request.method == 'POST':
-
         product_id = request.POST.get('product')
-
-        product = get_object_or_404(
-            Product,
-            id=product_id
-        )
-
+        product = get_object_or_404(Product, id=product_id)
         pid = str(product.id)
 
         if pid in cart:
@@ -50,13 +39,9 @@ def pos_home(request):
             }
 
         request.session['cart'] = cart
-
         return redirect('pos_home')
 
-    total = sum(
-        item['qty'] * item['price']
-        for item in cart.values()
-    )
+    total = sum(item['qty'] * item['price'] for item in cart.values())
 
     context = {
         'products': products,
@@ -64,31 +49,19 @@ def pos_home(request):
         'total': total,
     }
 
-    return render(
-        request,
-        'pos/pos_home.html',
-        context
-    )
+    return render(request, 'pos/pos_home.html', context)
 
 
 @login_required
 def checkout(request):
-
     cart = request.session.get('cart', {})
-
     if not cart:
         return redirect('pos_home')
 
     customers = Customer.objects.all()
+    total = sum(item['qty'] * item['price'] for item in cart.values())
 
-    total = sum(
-        item['qty'] * item['price']
-        for item in cart.values()
-    )
-
-    request.session['checkout_token'] = str(
-        uuid.uuid4()
-    )
+    request.session['checkout_token'] = str(uuid.uuid4())
 
     return render(
         request,
@@ -106,9 +79,7 @@ def checkout(request):
 @require_POST
 @transaction.atomic
 def process_checkout(request):
-
     cart = request.session.get('cart', {})
-
     if not cart:
         return redirect('pos_home')
 
@@ -133,8 +104,6 @@ def process_checkout(request):
     shop = get_user_shop(request.user)
 
     from services.sale_service import SaleService
-
-    # Delegate sale creation to service
     sale = SaleService.create_sale(
         shop=shop,
         customer=customer,
@@ -149,234 +118,132 @@ def process_checkout(request):
         action=f"Created sale {sale.receipt_number}"
     )
 
-    # Clear session
     request.session['cart'] = {}
     request.session['checkout_token'] = None
 
-    return render(request, 'pos/receipt.html', {
-        'sale': sale
-    })
+    return render(request, 'pos/receipt.html', {'sale': sale})
 
 
 @login_required
-def remove_from_cart(
-    request,
-    product_id
-):
-
+def remove_from_cart(request, product_id):
     cart = request.session.get('cart', {})
-
     pid = str(product_id)
 
     if pid in cart:
         del cart[pid]
 
     request.session['cart'] = cart
-
     return redirect('pos_home')
 
 
 @login_required
 def clear_cart(request):
-
     request.session['cart'] = {}
-
     return redirect('pos_home')
 
 
 @login_required
-def increase_qty(
-    request,
-    product_id
-):
-
+def increase_qty(request, product_id):
     cart = request.session.get('cart', {})
-
     pid = str(product_id)
 
     if pid in cart:
         cart[pid]['qty'] += 1
 
     request.session['cart'] = cart
-
     return redirect('pos_home')
 
 
 @login_required
-def decrease_qty(
-    request,
-    product_id
-):
-
+def decrease_qty(request, product_id):
     cart = request.session.get('cart', {})
-
     pid = str(product_id)
 
     if pid in cart:
-
         cart[pid]['qty'] -= 1
-
         if cart[pid]['qty'] <= 0:
             del cart[pid]
 
     request.session['cart'] = cart
-
     return redirect('pos_home')
 
 
 @login_required
 @require_POST
 def api_add_to_cart(request):
+    product_id = request.POST.get('product_id')
+    product = Product.objects.get(id=product_id)
 
-    product_id = request.POST.get(
-        'product_id'
-    )
-
-    product = Product.objects.get(
-        id=product_id
-    )
-
-    cart = request.session.get(
-        'cart',
-        {}
-    )
-
+    cart = request.session.get('cart', {})
     pid = str(product_id)
 
     if pid in cart:
-
         cart[pid]['qty'] += 1
-
     else:
-
         cart[pid] = {
             'name': product.name,
             'qty': 1,
-            'price': float(
-                product.selling_price
-            ),
+            'price': float(product.selling_price),
         }
 
     request.session['cart'] = cart
-
-    total = sum(
-        item['qty'] * item['price']
-        for item in cart.values()
-    )
+    total = sum(item['qty'] * item['price'] for item in cart.values())
 
     html = render_to_string(
         'pos/cart_partial.html',
-        {
-            'cart': cart,
-            'total': total
-        },
+        {'cart': cart, 'total': total},
         request=request
     )
 
-    return JsonResponse({
-        'cart_html': html,
-        'total': total
-    })
+    return JsonResponse({'cart_html': html, 'total': total})
 
 
 @login_required
 @require_POST
 def api_update_cart(request):
+    product_id = request.POST.get('product_id')
+    action = request.POST.get('action')
 
-    product_id = request.POST.get(
-        'product_id'
-    )
-
-    action = request.POST.get(
-        'action'
-    )
-
-    cart = request.session.get(
-        'cart',
-        {}
-    )
-
+    cart = request.session.get('cart', {})
     pid = str(product_id)
 
     if pid not in cart:
-
-        return JsonResponse(
-            {
-                'error': 'Item not in cart'
-            },
-            status=400
-        )
+        return JsonResponse({'error': 'Item not in cart'}, status=400)
 
     if action == 'increase':
-
         cart[pid]['qty'] += 1
-
     elif action == 'decrease':
-
         cart[pid]['qty'] -= 1
-
         if cart[pid]['qty'] <= 0:
             del cart[pid]
 
     request.session['cart'] = cart
-
-    total = sum(
-        item['qty'] * item['price']
-        for item in cart.values()
-    )
+    total = sum(item['qty'] * item['price'] for item in cart.values())
 
     html = render_to_string(
         'pos/cart_partial.html',
-        {
-            'cart': cart,
-            'total': total
-        },
+        {'cart': cart, 'total': total},
         request=request
     )
 
-    return JsonResponse({
-        'cart_html': html,
-        'total': total
-    })
+    return JsonResponse({'cart_html': html, 'total': total})
 
-# Partial view
+
 @login_required
 def pos_products_partial(request):
+    shop = get_user_shop(request.user)
+    products = Product.objects.filter(shop=shop)
 
-    shop = get_user_shop(
-        request.user
-    )
-
-    products = Product.objects.filter(
-        shop=shop
-    )
-
-    html = render_to_string(
-        'pos/partials/products.html',
-        {
-            'products': products
-        }
-    )
-
+    html = render_to_string('pos/partials/products.html', {'products': products})
     return HttpResponse(html)
 
-# POS search endpoint (FAST FILTER API)
+
 @login_required
 def pos_search_products(request):
+    shop = get_user_shop(request.user)
+    query = request.GET.get('q', '')
 
-    shop = get_user_shop(
-        request.user
-    )
-
-    query = request.GET.get(
-        'q',
-        ''
-    )
-
-    products = Product.objects.filter(
-        shop=shop,
-        name__icontains=query
-    )[:10]
+    products = Product.objects.filter(shop=shop, name__icontains=query)[:10]
 
     data = [
         {
@@ -388,7 +255,17 @@ def pos_search_products(request):
         for p in products
     ]
 
-    return JsonResponse(
-        data,
-        safe=False
+    return JsonResponse(data, safe=False)
+
+
+# Refund endpoint
+@login_required
+def refund_sale(request, sale_id):
+    from services.refund_service import RefundService
+
+    RefundService.refund_sale(
+        sale_id=sale_id,
+        user=request.user
     )
+
+    return redirect('pos_home')

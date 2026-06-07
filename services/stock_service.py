@@ -9,7 +9,6 @@ class StockService:
         """
         Reduce stock safely and record movement.
         """
-
         if product.stock_quantity < quantity:
             raise ValidationError("Not enough stock available.")
 
@@ -28,7 +27,21 @@ class StockService:
         """
         Increase stock (used for refunds/deletes).
         """
+        product.stock_quantity += quantity
+        product.save()
 
+        StockMovement.objects.create(
+            product=product,
+            movement_type="IN",
+            quantity=quantity,
+            note=note
+        )
+
+    @staticmethod
+    def reverse_decrease_stock(product, quantity, note="Refund"):
+        """
+        Reverse a sale (restock items).
+        """
         product.stock_quantity += quantity
         product.save()
 
