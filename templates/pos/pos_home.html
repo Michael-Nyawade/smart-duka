@@ -75,10 +75,6 @@
 
             <hr>
 
-            <h4>
-                Total: KES <span id="cart-total">{{ total }}</span>
-            </h4>
-
             <!-- HTMX Checkout Trigger -->
             <button
                 hx-get="{% url 'htmx_checkout_form' %}"
