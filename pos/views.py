@@ -34,29 +34,6 @@ def pos_home(request):
     })
 
 
-@login_required
-def checkout(request):
-    cart = request.session.get('cart', {})
-    if not cart:
-        return redirect('pos_home')
-
-    customers = Customer.objects.all()
-    total = sum(item['qty'] * item['price'] for item in cart.values())
-
-    request.session['checkout_token'] = str(uuid.uuid4())
-
-    return render(
-        request,
-        'pos/checkout.html',
-        {
-            'cart': cart,
-            'customers': customers,
-            'total': total,
-            'token': request.session['checkout_token']
-        }
-    )
-
-
 # HTMX checkout form endpoint
 @login_required
 def htmx_checkout_form(request):

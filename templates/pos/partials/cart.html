@@ -16,12 +16,6 @@
     {% endfor %}
 </table>
 
-<h3>Total: {{ total }}</h3>
-
-<a href="{% url 'checkout' %}">
-    <button>Checkout</button>
-</a>
-
 {% else %}
 <p>Cart is empty</p>
 {% endif %}
