@@ -22,34 +22,15 @@ from core.utils import get_user_shop, for_current_shop
 @login_required
 def pos_home(request):
     products = for_current_shop(Product.objects.all(), request.user)
-    cart = request.session.get('cart', {})
+    cart = request.session.get("cart", {})
 
-    if request.method == 'POST':
-        product_id = request.POST.get('product')
-        product = get_object_or_404(Product, id=product_id)
-        pid = str(product.id)
+    total = sum(item["qty"] * item["price"] for item in cart.values())
 
-        if pid in cart:
-            cart[pid]['qty'] += 1
-        else:
-            cart[pid] = {
-                'name': product.name,
-                'qty': 1,
-                'price': float(product.selling_price),
-            }
-
-        request.session['cart'] = cart
-        return redirect('pos_home')
-
-    total = sum(item['qty'] * item['price'] for item in cart.values())
-
-    context = {
-        'products': products,
-        'cart': cart,
-        'total': total,
-    }
-
-    return render(request, 'pos/pos_home.html', context)
+    return render(request, "pos/pos_home.html", {
+        "products": products,
+        "cart": cart,
+        "total": total,
+    })
 
 
 @login_required
@@ -171,30 +152,22 @@ def decrease_qty(request, product_id):
 @login_required
 @require_POST
 def api_add_to_cart(request):
+    from pos.services.cart_service import CartService
+    from inventory.models import Product
+
     product_id = request.POST.get('product_id')
     product = Product.objects.get(id=product_id)
 
-    cart = request.session.get('cart', {})
-    pid = str(product_id)
+    cart = CartService.get_cart(request.session)
+    cart = CartService.add_item(cart, product)
 
-    if pid in cart:
-        cart[pid]['qty'] += 1
-    else:
-        cart[pid] = {
-            'name': product.name,
-            'qty': 1,
-            'price': float(product.selling_price),
-        }
+    CartService.save_cart(request.session, cart)
 
-    request.session['cart'] = cart
-
-    total = sum(item['qty'] * item['price'] for item in cart.values())
-    cart_count = sum(item['qty'] for item in cart.values())
+    total = sum(i["qty"] * i["price"] for i in cart.values())
+    cart_count = sum(i["qty"] for i in cart.values())
 
     return JsonResponse({
         "success": True,
-        "product_id": product_id,
-        "qty": cart[pid]['qty'],
         "total": total,
         "cart_count": cart_count
     })
@@ -203,34 +176,23 @@ def api_add_to_cart(request):
 @login_required
 @require_POST
 def api_update_cart(request):
+    from pos.services.cart_service import CartService
+
     product_id = request.POST.get('product_id')
     action = request.POST.get('action')
 
-    cart = request.session.get('cart', {})
-    pid = str(product_id)
+    cart = CartService.get_cart(request.session)
+    cart = CartService.update_item(cart, product_id, action)
 
-    if pid not in cart:
-        return JsonResponse({'error': 'Item not in cart'})
+    CartService.save_cart(request.session, cart)
 
-    if action == "increase":
-        cart[pid]['qty'] += 1
-    elif action == "decrease":
-        cart[pid]['qty'] -= 1
-        if cart[pid]['qty'] <= 0:
-            del cart[pid]
-
-    request.session['cart'] = cart
-
-    total = sum(item['qty'] * item['price'] for item in cart.values())
-    cart_count = sum(item['qty'] for item in cart.values())
+    total = sum(i["qty"] * i["price"] for i in cart.values())
+    cart_count = sum(i["qty"] for i in cart.values())
 
     return JsonResponse({
         "success": True,
-        "product_id": product_id,
-        "action": action,
         "total": total,
-        "cart_count": cart_count,
-        "qty": cart.get(pid, {}).get('qty', 0)
+        "cart_count": cart_count
     })
 
 
