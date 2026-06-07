@@ -118,30 +118,45 @@ def clear_cart(request):
     return redirect('pos_home')
 
 
+# HTMX quantity views
 @login_required
+@require_POST
 def increase_qty(request, product_id):
-    cart = request.session.get('cart', {})
+    cart = request.session.get("cart", {})
     pid = str(product_id)
 
     if pid in cart:
-        cart[pid]['qty'] += 1
+        cart[pid]["qty"] += 1
 
-    request.session['cart'] = cart
-    return redirect('pos_home')
+    request.session["cart"] = cart
+
+    total = sum(i["qty"] * i["price"] for i in cart.values())
+
+    return render(request, "pos/partials/cart.html", {
+        "cart": cart,
+        "total": total,
+    })
 
 
 @login_required
+@require_POST
 def decrease_qty(request, product_id):
-    cart = request.session.get('cart', {})
+    cart = request.session.get("cart", {})
     pid = str(product_id)
 
     if pid in cart:
-        cart[pid]['qty'] -= 1
-        if cart[pid]['qty'] <= 0:
+        cart[pid]["qty"] -= 1
+        if cart[pid]["qty"] <= 0:
             del cart[pid]
 
-    request.session['cart'] = cart
-    return redirect('pos_home')
+    request.session["cart"] = cart
+
+    total = sum(i["qty"] * i["price"] for i in cart.values())
+
+    return render(request, "pos/partials/cart.html", {
+        "cart": cart,
+        "total": total,
+    })
 
 
 @login_required

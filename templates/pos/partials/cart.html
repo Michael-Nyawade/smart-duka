@@ -6,18 +6,35 @@
     <tr>
         <th>Item</th>
         <th>Qty</th>
+        <th>Actions</th>
     </tr>
 
     {% for key, item in cart.items %}
     <tr>
         <td>{{ item.name }}</td>
         <td>{{ item.qty }}</td>
+        <td>
+            <button
+                hx-post="{% url 'decrease_qty' key %}"
+                hx-target="#cart-box"
+                hx-swap="innerHTML"
+            >
+                -
+            </button>
+
+            <button
+                hx-post="{% url 'increase_qty' key %}"
+                hx-target="#cart-box"
+                hx-swap="innerHTML"
+            >
+                +
+            </button>
+        </td>
     </tr>
     {% endfor %}
 </table>
-<div id="cart-total-wrapper">
-    <h4>Total: KES {{ total }}</h4>
-</div>
+
+<h3>Total: {{ total }}</h3>
 
 {% else %}
 <p>Cart is empty</p>
