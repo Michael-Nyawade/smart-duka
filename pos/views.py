@@ -187,15 +187,17 @@ def api_add_to_cart(request):
         }
 
     request.session['cart'] = cart
+
     total = sum(item['qty'] * item['price'] for item in cart.values())
+    cart_count = sum(item['qty'] for item in cart.values())
 
-    html = render_to_string(
-        'pos/cart_partial.html',
-        {'cart': cart, 'total': total},
-        request=request
-    )
-
-    return JsonResponse({'cart_html': html, 'total': total})
+    return JsonResponse({
+        "success": True,
+        "product_id": product_id,
+        "qty": cart[pid]['qty'],
+        "total": total,
+        "cart_count": cart_count
+    })
 
 
 @login_required
@@ -208,25 +210,28 @@ def api_update_cart(request):
     pid = str(product_id)
 
     if pid not in cart:
-        return JsonResponse({'error': 'Item not in cart'}, status=400)
+        return JsonResponse({'error': 'Item not in cart'})
 
-    if action == 'increase':
+    if action == "increase":
         cart[pid]['qty'] += 1
-    elif action == 'decrease':
+    elif action == "decrease":
         cart[pid]['qty'] -= 1
         if cart[pid]['qty'] <= 0:
             del cart[pid]
 
     request.session['cart'] = cart
+
     total = sum(item['qty'] * item['price'] for item in cart.values())
+    cart_count = sum(item['qty'] for item in cart.values())
 
-    html = render_to_string(
-        'pos/cart_partial.html',
-        {'cart': cart, 'total': total},
-        request=request
-    )
-
-    return JsonResponse({'cart_html': html, 'total': total})
+    return JsonResponse({
+        "success": True,
+        "product_id": product_id,
+        "action": action,
+        "total": total,
+        "cart_count": cart_count,
+        "qty": cart.get(pid, {}).get('qty', 0)
+    })
 
 
 @login_required

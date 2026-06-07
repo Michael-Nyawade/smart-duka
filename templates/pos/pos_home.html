@@ -85,10 +85,8 @@
 
                             <div class="mt-2">
 
-                                <a href="{% url 'increase_qty' key %}">+</a>
-                                |
-                                <a href="{% url 'decrease_qty' key %}">-</a>
-                                |
+                                <button onclick="updateCart('{{ key }}', 'increase')">+</button>
+                                <button onclick="updateCart('{{ key }}', 'decrease')">-</button>
                                 <a href="{% url 'remove_from_cart' key %}">Remove</a>
 
                             </div>
@@ -106,7 +104,7 @@
             <hr>
 
             <h4>
-                Total: KES {{ total }}
+                Total: KES <span id="cart-total">{{ total }}</span>
             </h4>
 
             <a href="{% url 'checkout' %}" class="btn btn-success w-100 mt-2">
@@ -128,18 +126,48 @@
 // =============================
 // FAST ADD TO CART (AJAX)
 // =============================
-async function addToCart(productId) {
+function addToCart(productId) {
 
-    await fetch("{% url 'api_add_to_cart' %}", {
+    fetch("{% url 'api_add_to_cart' %}", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             "X-CSRFToken": "{{ csrf_token }}"
         },
         body: "product_id=" + productId
-    });
+    })
+    .then(res => res.json())
+    .then(data => {
 
-    location.reload();
+        // Update total instantly
+        document.getElementById("cart-total").innerText = data.total;
+
+        // Visual feedback
+        console.log("Added:", data);
+    });
+}
+
+
+// =============================
+// UPDATE CART QUANTITY (AJAX)
+// =============================
+function updateCart(productId, action) {
+
+    fetch("{% url 'api_update_cart' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: "product_id=" + productId + "&action=" + action
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("cart-total").innerText = data.total;
+
+        console.log("Cart updated:", data);
+    });
 }
 
 
