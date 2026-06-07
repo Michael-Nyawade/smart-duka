@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse
 from django.template.loader import render_to_string
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 import uuid
 
@@ -147,53 +148,6 @@ def decrease_qty(request, product_id):
 
     request.session['cart'] = cart
     return redirect('pos_home')
-
-
-@login_required
-@require_POST
-def api_add_to_cart(request):
-    from pos.services.cart_service import CartService
-    from inventory.models import Product
-
-    product_id = request.POST.get('product_id')
-    product = Product.objects.get(id=product_id)
-
-    cart = CartService.get_cart(request.session)
-    cart = CartService.add_item(cart, product)
-
-    CartService.save_cart(request.session, cart)
-
-    total = sum(i["qty"] * i["price"] for i in cart.values())
-    cart_count = sum(i["qty"] for i in cart.values())
-
-    return JsonResponse({
-        "success": True,
-        "total": total,
-        "cart_count": cart_count
-    })
-
-
-@login_required
-@require_POST
-def api_update_cart(request):
-    from pos.services.cart_service import CartService
-
-    product_id = request.POST.get('product_id')
-    action = request.POST.get('action')
-
-    cart = CartService.get_cart(request.session)
-    cart = CartService.update_item(cart, product_id, action)
-
-    CartService.save_cart(request.session, cart)
-
-    total = sum(i["qty"] * i["price"] for i in cart.values())
-    cart_count = sum(i["qty"] for i in cart.values())
-
-    return JsonResponse({
-        "success": True,
-        "total": total,
-        "cart_count": cart_count
-    })
 
 
 @login_required

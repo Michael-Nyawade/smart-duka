@@ -15,9 +15,7 @@ urlpatterns = [
     path('cart/increase/<int:product_id>/', views.increase_qty, name='increase_qty'),
     path('cart/decrease/<int:product_id>/', views.decrease_qty, name='decrease_qty'),
 
-    # AJAX Cart API
-    path('api/add-to-cart/', views.api_add_to_cart, name='api_add_to_cart'),
-    path('api/cart/update/', views.api_update_cart, name='api_update_cart'),
+    # HTMX Cart
     path("htmx/cart/add/", views.htmx_add_to_cart, name="htmx_add_to_cart"),
 
     # Product utilities
