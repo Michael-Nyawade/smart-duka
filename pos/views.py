@@ -57,22 +57,36 @@ def checkout(request):
     )
 
 
+# HTMX checkout form endpoint
+@login_required
+def htmx_checkout_form(request):
+    cart = request.session.get("cart", {})
+
+    if not cart:
+        return HttpResponse("Cart is empty")
+
+    customers = Customer.objects.all()
+    total = sum(i["qty"] * i["price"] for i in cart.values())
+
+    return render(request, "pos/partials/checkout_form.html", {
+        "cart": cart,
+        "customers": customers,
+        "total": total
+    })
+
+
+# HTMX checkout submission endpoint
 @login_required
 @require_POST
 @transaction.atomic
-def process_checkout(request):
-    cart = request.session.get('cart', {})
+def htmx_process_checkout(request):
+    cart = request.session.get("cart", {})
+
     if not cart:
-        return redirect('pos_home')
+        return HttpResponse("Cart is empty")
 
-    token = request.POST.get('token')
-    session_token = request.session.get('checkout_token')
-
-    if not token or token != session_token:
-        return redirect('pos_home')
-
-    customer_id = request.POST.get('customer')
-    payment_method = request.POST.get('payment_method')
+    customer_id = request.POST.get("customer")
+    payment_method = request.POST.get("payment_method")
 
     customer = None
     if customer_id:
@@ -100,10 +114,11 @@ def process_checkout(request):
         action=f"Created sale {sale.receipt_number}"
     )
 
-    request.session['cart'] = {}
-    request.session['checkout_token'] = None
+    request.session["cart"] = {}
 
-    return render(request, 'pos/receipt.html', {'sale': sale})
+    return render(request, "pos/partials/receipt.html", {
+        "sale": sale
+    })
 
 
 @login_required

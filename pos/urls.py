@@ -6,8 +6,8 @@ urlpatterns = [
     path('', views.pos_home, name='pos_home'),
 
     # Checkout Flow
-    path('checkout/', views.checkout, name='checkout'),
-    path('process-checkout/', views.process_checkout, name='process_checkout'),
+    path("htmx/checkout/", views.htmx_checkout_form, name="htmx_checkout_form"),
+    path("htmx/checkout/process/", views.htmx_process_checkout, name="htmx_process_checkout"),
 
     # Cart (session-based)
     path('remove/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
