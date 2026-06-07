@@ -1,11 +1,16 @@
 <h2>Checkout</h2>
 
+{% if error %}
+  <div style="color:red;">
+    {{ error }}
+  </div>
+{% endif %}
+
 <form
     hx-post="{% url 'htmx_process_checkout' %}"
     hx-target="#checkout-box"
     hx-swap="innerHTML"
 >
-
     {% csrf_token %}
 
     <h3>Total: {{ total }}</h3>
@@ -26,5 +31,4 @@
     </select>
 
     <button type="submit">Complete Sale</button>
-
 </form>

@@ -1,21 +1,19 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.template.loader import render_to_string
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
-import uuid
-
 from inventory.models import Product
 from sales.models import (
     Customer,
-    Sale,
-    SaleItem,
     CashierShift,
     AuditLog
 )
+
+from services.sale_service import SaleService
 
 from core.utils import get_user_shop, for_current_shop
 
@@ -57,45 +55,49 @@ def htmx_checkout_form(request):
 @require_POST
 @transaction.atomic
 def htmx_process_checkout(request):
-    cart = request.session.get("cart", {})
+    try:
+        cart = request.session.get("cart", {})
 
-    if not cart:
-        return HttpResponse("Cart is empty")
+        if not cart:
+            return HttpResponseBadRequest("Cart is empty")
 
-    customer_id = request.POST.get("customer")
-    payment_method = request.POST.get("payment_method")
+        customer_id = request.POST.get("customer")
+        payment_method = request.POST.get("payment_method")
 
-    customer = None
-    if customer_id:
-        customer = Customer.objects.get(id=customer_id)
+        customer = Customer.objects.filter(id=customer_id).first() if customer_id else None
 
-    shift_id = request.session.get("shift_id")
-    shift = None
-    if shift_id:
+        shift_id = request.session.get("shift_id")
         shift = CashierShift.objects.filter(id=shift_id, is_active=True).first()
 
-    shop = get_user_shop(request.user)
+        shop = get_user_shop(request.user)
 
-    from services.sale_service import SaleService
-    sale = SaleService.create_sale(
-        shop=shop,
-        customer=customer,
-        payment_method=payment_method,
-        cart=cart,
-        shift=shift,
-        user=request.user
-    )
+        sale = SaleService.create_sale(
+            shop=shop,
+            customer=customer,
+            payment_method=payment_method,
+            cart=cart,
+            shift=shift,
+            user=request.user
+        )
 
-    AuditLog.objects.create(
-        user=request.user,
-        action=f"Created sale {sale.receipt_number}"
-    )
+        AuditLog.objects.create(
+            user=request.user,
+            action=f"Created sale {sale.receipt_number}"
+        )
 
-    request.session["cart"] = {}
+        request.session["cart"] = {}
 
-    return render(request, "pos/partials/receipt.html", {
-        "sale": sale
-    })
+        return render(request, "pos/partials/receipt.html", {
+            "sale": sale
+        })
+
+    except Exception as e:
+        return render(request, "pos/partials/checkout_form.html", {
+            "cart": cart,
+            "customers": Customer.objects.all(),
+            "total": sum(i["qty"] * i["price"] for i in cart.values()),
+            "error": str(e),
+        })
 
 
 @login_required
