@@ -34,10 +34,24 @@ def dashboard_view(request):
         total=Sum(F('quantity') * F('selling_price'))
     )['total'] or 0
 
-    # TOTAL PROFIT (DB-level aggregation)
-    total_profit = SaleItem.objects.filter(
+    # EXPECTED PROFIT
+    expected_profit = SaleItem.objects.filter(
         sale__shop=shop,
         sale__created_at__date=today
+    ).aggregate(
+        profit=Sum(
+            ExpressionWrapper(
+                (F('selling_price') - F('product__buying_price')) * F('quantity'),
+                output_field=DecimalField()
+            )
+        )
+    )['profit'] or 0
+
+    # REALIZED PROFIT (only CASH + MOBILE)
+    realized_profit = SaleItem.objects.filter(
+        sale__shop=shop,
+        sale__created_at__date=today,
+        sale__payment_method__in=['CASH', 'MOBILE']
     ).aggregate(
         profit=Sum(
             ExpressionWrapper(
@@ -126,7 +140,8 @@ def dashboard_view(request):
     context = {
         'total_sales_count': total_sales_count,
         'total_revenue': total_revenue,
-        'total_profit': total_profit,
+        'expected_profit': expected_profit,
+        'realized_profit': realized_profit,
         'total_credit': total_credit,
         'low_stock_products': low_stock_products,
         'low_stock_count': low_stock_count,
