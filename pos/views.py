@@ -182,19 +182,6 @@ def pos_search_products(request):
     return JsonResponse(data, safe=False)
 
 
-# Refund endpoint
-@login_required
-def refund_sale(request, sale_id):
-    from services.refund_service import RefundService
-
-    RefundService.refund_sale(
-        sale_id=sale_id,
-        user=request.user
-    )
-
-    return redirect('pos_home')
-
-
 # HTMX cart endpoint
 @login_required
 @require_POST
