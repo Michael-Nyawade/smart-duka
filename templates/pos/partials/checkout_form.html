@@ -1,0 +1,34 @@
+<h2>Checkout</h2>
+
+{% if error %}
+  <div style="color:red;">
+    {{ error }}
+  </div>
+{% endif %}
+
+<form
+    hx-post="{% url 'htmx_process_checkout' %}"
+    hx-target="#checkout-box"
+    hx-swap="innerHTML"
+>
+    {% csrf_token %}
+
+    <h3>Total: {{ total }}</h3>
+
+    <label>Customer</label>
+    <select name="customer">
+        <option value="">Walk-in</option>
+        {% for c in customers %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Payment Method</label>
+    <select name="payment_method">
+        <option value="CASH">Cash</option>
+        <option value="MOBILE">Mobile Money</option>
+        <option value="CREDIT">Credit</option>
+    </select>
+
+    <button type="submit">Complete Sale</button>
+</form>

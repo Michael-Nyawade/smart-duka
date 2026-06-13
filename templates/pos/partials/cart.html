@@ -1,0 +1,41 @@
+<h3>Cart</h3>
+
+{% if cart %}
+
+<table width="100%">
+    <tr>
+        <th>Item</th>
+        <th>Qty</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for key, item in cart.items %}
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.qty }}</td>
+        <td>
+            <button
+                hx-post="{% url 'decrease_qty' key %}"
+                hx-target="#cart-box"
+                hx-swap="innerHTML"
+            >
+                -
+            </button>
+
+            <button
+                hx-post="{% url 'increase_qty' key %}"
+                hx-target="#cart-box"
+                hx-swap="innerHTML"
+            >
+                +
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>Total: {{ total }}</h3>
+
+{% else %}
+<p>Cart is empty</p>
+{% endif %}

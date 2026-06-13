@@ -45,12 +45,18 @@
                             Stock: {{ product.stock_quantity }}
                         </small>
 
-                        <button
-                            class="btn btn-sm btn-primary mt-2"
-                            onclick="addToCart('{{ product.id }}')"
+                        <!-- HTMX Add to Cart -->
+                        <form
+                            hx-post="{% url 'htmx_add_to_cart' %}"
+                            hx-target="#cart-box"
+                            hx-swap="innerHTML"
                         >
-                            Add
-                        </button>
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="btn btn-sm btn-primary mt-2">
+                                Add {{ product.name }}
+                            </button>
+                        </form>
 
                     </div>
 
@@ -63,59 +69,28 @@
         <!-- RIGHT: CART -->
         <div class="col-md-5">
 
-            <h4>Cart</h4>
-
             <div id="cart-box">
-
-                {% if cart %}
-
-                    {% for key, item in cart.items %}
-
-                        <div class="border p-2 mb-2">
-
-                            <strong>{{ item.name }}</strong>
-
-                            <div>
-                                Qty: {{ item.qty }}
-                            </div>
-
-                            <div>
-                                KES {{ item.price }} × {{ item.qty }}
-                            </div>
-
-                            <div class="mt-2">
-
-                                <a href="{% url 'increase_qty' key %}">+</a>
-                                |
-                                <a href="{% url 'decrease_qty' key %}">-</a>
-                                |
-                                <a href="{% url 'remove_from_cart' key %}">Remove</a>
-
-                            </div>
-
-                        </div>
-
-                    {% endfor %}
-
-                {% else %}
-                    <p>Cart is empty</p>
-                {% endif %}
-
+                {% include "pos/partials/cart.html" %}
             </div>
 
             <hr>
 
-            <h4>
-                Total: KES {{ total }}
-            </h4>
-
-            <a href="{% url 'checkout' %}" class="btn btn-success w-100 mt-2">
-                Proceed to Checkout
-            </a>
+            <!-- HTMX Checkout Trigger -->
+            <button
+                hx-get="{% url 'htmx_checkout_form' %}"
+                hx-target="#checkout-box"
+                hx-swap="innerHTML"
+                class="btn btn-success w-100 mt-2"
+            >
+                Checkout
+            </button>
 
             <a href="{% url 'clear_cart' %}" class="btn btn-danger w-100 mt-2">
                 Clear Cart
             </a>
+
+            <!-- Checkout Container -->
+            <div id="checkout-box"></div>
 
         </div>
 
@@ -124,25 +99,6 @@
 </div>
 
 <script>
-
-// =============================
-// FAST ADD TO CART (AJAX)
-// =============================
-async function addToCart(productId) {
-
-    await fetch("{% url 'api_add_to_cart' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: "product_id=" + productId
-    });
-
-    location.reload();
-}
-
-
 // =============================
 // LIVE SEARCH (keyboard POS base)
 // =============================
@@ -181,7 +137,19 @@ searchInput.addEventListener("input", function () {
                 KES ${product.price} | Stock: ${product.stock}
             `;
 
-            div.onclick = () => addToCart(product.id);
+            // HTMX alternative: inject form dynamically
+            div.onclick = () => {
+                const form = document.createElement("form");
+                form.setAttribute("hx-post", "{% url 'htmx_add_to_cart' %}");
+                form.setAttribute("hx-target", "#cart-box");
+                form.setAttribute("hx-swap", "innerHTML");
+                form.innerHTML = `
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="${product.id}">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            };
 
             resultsBox.appendChild(div);
         });
@@ -189,7 +157,6 @@ searchInput.addEventListener("input", function () {
     }, 200);
 
 });
-
 </script>
 
 {% endblock %}

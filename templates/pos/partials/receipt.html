@@ -1,0 +1,9 @@
+<h2>Sale Completed </h2>
+
+<p><strong>Receipt:</strong> {{ sale.receipt_number }}</p>
+
+<p><strong>Total:</strong> {{ sale.total_amount }}</p>
+
+<a href="{% url 'pos_home' %}">
+    <button>New Sale</button>
+</a>
