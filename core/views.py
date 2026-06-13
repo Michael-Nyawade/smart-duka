@@ -70,6 +70,27 @@ def dashboard_view(request):
         total=Sum(F('quantity') * F('selling_price'))
     )['total'] or 0
 
+    # CASH SALES TODAY
+    cash_sales = SaleItem.objects.filter(
+        sale__shop=shop,
+        sale__created_at__date=today,
+        sale__payment_method='CASH'
+    ).aggregate(
+        total=Sum(F('quantity') * F('selling_price'))
+    )['total'] or 0
+
+    # MOBILE MONEY SALES TODAY
+    mobile_sales = SaleItem.objects.filter(
+        sale__shop=shop,
+        sale__created_at__date=today,
+        sale__payment_method='MOBILE'
+    ).aggregate(
+        total=Sum(F('quantity') * F('selling_price'))
+    )['total'] or 0
+
+    # TOTAL CASH COLLECTED (REAL MONEY IN HAND)
+    cash_collected = cash_sales + mobile_sales
+
     # LOW STOCK PRODUCTS
     low_stock_products = Product.objects.filter(
         shop=shop,
@@ -143,6 +164,9 @@ def dashboard_view(request):
         'expected_profit': expected_profit,
         'realized_profit': realized_profit,
         'total_credit': total_credit,
+        'cash_sales': cash_sales,
+        'mobile_sales': mobile_sales,
+        'cash_collected': cash_collected,
         'low_stock_products': low_stock_products,
         'low_stock_count': low_stock_count,
         'reorder_suggestions': reorder_suggestions,
