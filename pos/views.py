@@ -10,7 +10,6 @@ from inventory.models import Product
 from sales.models import (
     Customer,
     CashierShift,
-    AuditLog
 )
 
 from services.sale_service import SaleService
@@ -78,11 +77,6 @@ def htmx_process_checkout(request):
             cart=cart,
             shift=shift,
             user=request.user
-        )
-
-        AuditLog.objects.create(
-            user=request.user,
-            action=f"Created sale {sale.receipt_number}"
         )
 
         request.session["cart"] = {}
