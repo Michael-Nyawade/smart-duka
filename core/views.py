@@ -6,7 +6,7 @@ from django.db.models.functions import ExtractHour
 from django.utils import timezone
 
 from core.utils import get_user_shop
-from sales.models import Sale, SaleItem
+from sales.models import Sale, SaleItem, Customer
 from inventory.models import Product
 from inventory.services import InventoryIntelligence
 
@@ -158,6 +158,12 @@ def dashboard_view(request):
         last_sold__lt=thirty_days_ago
     )
 
+    # TOTAL OUTSTANDING CREDIT
+    total_outstanding_credit = sum(
+        customer.outstanding_balance()
+        for customer in Customer.objects.filter(shop=shop)
+    )
+
     context = {
         'total_sales_count': total_sales_count,
         'total_revenue': total_revenue,
@@ -170,6 +176,7 @@ def dashboard_view(request):
         'low_stock_products': low_stock_products,
         'low_stock_count': low_stock_count,
         'reorder_suggestions': reorder_suggestions,
+        'total_outstanding_credit': total_outstanding_credit,
     }
 
     context.update({

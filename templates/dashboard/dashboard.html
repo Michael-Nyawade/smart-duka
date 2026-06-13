@@ -38,12 +38,12 @@
                 <div class="card-body">
                     <h5>Profit Today</h5>
                     <div>
-                        <h6>Expected Profit</h6>
+                        <h6>Expected Profit (If All Credit is Paid)</h6>
                         <h7>{{ expected_profit }}</h7>
                     </div>
                     
                     <div>
-                        <h6>Realized Profit</h6>
+                        <h6>Realized Profit (Cash Profit Only)</h6>
                         <h7>{{ realized_profit }}</h7>
                     </div>
                 </div>
@@ -68,6 +68,12 @@
 
         <p>Cash Sales: {{ cash_sales }}</p>
         <p>Mobile Money: {{ mobile_sales }}</p>
+    </div>
+
+    <!-- Total Outstanding Credit Section -->
+    <div>
+        <h3>Total Outstanding Credit</h3>
+        <h2>{{ total_outstanding_credit }}</h2>
     </div>
 
     <!-- Top Products Section -->
