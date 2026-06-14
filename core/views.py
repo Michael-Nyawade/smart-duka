@@ -10,6 +10,9 @@ from sales.models import Sale, SaleItem, Customer
 from inventory.models import Product
 from inventory.services import InventoryIntelligence
 
+from django.contrib.auth import authenticate, login
+from django.shortcuts import redirect
+
 
 def dashboard_view(request):
     shop = get_user_shop(request.user)
@@ -232,3 +235,33 @@ def inventory_alerts(request):
         "out_of_stock": out_of_stock,
         "reorder": reorder,
     })
+
+
+# POS Login View
+def pos_login_view(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser or request.user.is_staff:
+            return redirect("/admin/")
+        return redirect("dashboard")
+
+    error = None
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+
+            # redirect based on role
+            if user.is_superuser or user.is_staff:
+                return redirect("/admin/")
+
+            # POS users go to POS home (NOT dashboard)
+            return redirect("pos_home")
+
+        error = "Invalid username or password"
+
+    return render(request, "auth/login.html", {"error": error})
