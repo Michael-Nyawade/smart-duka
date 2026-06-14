@@ -123,4 +123,4 @@ STATIC_URL = 'static/'
 
 # Login Redirects
 LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/pos/"
+LOGIN_REDIRECT_URL = "/"

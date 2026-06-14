@@ -69,6 +69,11 @@ class Command(BaseCommand):
             profile.shop = shop
             profile.save()
 
+        # assign roles
+        UserProfile.objects.filter(user=users["manager"]).update(role="MANAGER")
+        UserProfile.objects.filter(user=users["cashier1"]).update(role="CASHIER")
+        UserProfile.objects.filter(user=users["cashier2"]).update(role="CASHIER")
+
         return shop, users
 
     # ---------------------------

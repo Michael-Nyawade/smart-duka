@@ -14,12 +14,19 @@ class Shop(models.Model):
 
 class UserProfile(models.Model):
 
+    ROLE_CHOICES = (
+        ("ADMIN", "Admin"),
+        ("MANAGER", "Manager"),
+        ("CASHIER", "Cashier"),
+    )
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    shop = models.ForeignKey(
-        Shop,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=True, blank=True)
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="CASHIER"
     )
 
     def __str__(self):

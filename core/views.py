@@ -12,8 +12,12 @@ from inventory.services import InventoryIntelligence
 
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+from core.decorators import allowed_roles
 
 
+@login_required
+@allowed_roles(["ADMIN", "MANAGER"])
 def dashboard_view(request):
     shop = get_user_shop(request.user)
     today = date.today()
@@ -240,8 +244,13 @@ def inventory_alerts(request):
 # POS Login View
 def pos_login_view(request):
     if request.user.is_authenticated:
-        if request.user.is_superuser or request.user.is_staff:
+        if request.user.is_superuser:
             return redirect("/admin/")
+        role = request.user.userprofile.role
+        if role == "CASHIER":
+            return redirect("pos_home")
+        if role == "MANAGER":
+            return redirect("dashboard")
         return redirect("dashboard")
 
     error = None
@@ -256,12 +265,19 @@ def pos_login_view(request):
             login(request, user)
 
             # redirect based on role
-            if user.is_superuser or user.is_staff:
+            if user.is_superuser:
                 return redirect("/admin/")
 
-            # POS users go to POS home (NOT dashboard)
-            return redirect("pos_home")
+            role = user.userprofile.role
+
+            if role == "CASHIER":
+                return redirect("pos_home")
+
+            if role == "MANAGER":
+                return redirect("dashboard")
+
+            return redirect("dashboard")
 
         error = "Invalid username or password"
-
+    
     return render(request, "auth/login.html", {"error": error})
