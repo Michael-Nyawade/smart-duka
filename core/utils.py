@@ -11,9 +11,6 @@ def for_current_shop(queryset, user):
     shop = get_user_shop(user)
     return queryset.filter(shop=shop)
 
-
 def get_user_role(user):
-    try:
-        return user.userprofile.role
-    except:
-        return None
+    profile = getattr(user, "userprofile", None)
+    return getattr(profile, "role", None)

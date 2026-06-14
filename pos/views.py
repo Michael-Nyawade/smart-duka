@@ -41,7 +41,8 @@ def htmx_checkout_form(request):
     if not cart:
         return HttpResponse("Cart is empty")
 
-    customers = Customer.objects.all()
+    shop = get_user_shop(request.user)
+    customers = Customer.objects.filter(shop=shop)
     total = sum(i["qty"] * i["price"] for i in cart.values())
 
     return render(request, "pos/partials/checkout_form.html", {
@@ -65,12 +66,19 @@ def htmx_process_checkout(request):
         customer_id = request.POST.get("customer")
         payment_method = request.POST.get("payment_method")
 
-        customer = Customer.objects.filter(id=customer_id).first() if customer_id else None
+        shop = get_user_shop(request.user)
+
+        customer = (
+            Customer.objects.filter(
+                id=customer_id,
+                shop=shop
+            ).first()
+            if customer_id
+            else None
+        )
 
         shift_id = request.session.get("shift_id")
         shift = CashierShift.objects.filter(id=shift_id, is_active=True).first()
-
-        shop = get_user_shop(request.user)
 
         sale = SaleService.create_sale(
             shop=shop,
@@ -90,7 +98,7 @@ def htmx_process_checkout(request):
     except Exception as e:
         return render(request, "pos/partials/checkout_form.html", {
             "cart": cart,
-            "customers": Customer.objects.all(),
+            "customers": Customer.objects.filter(shop=shop),
             "total": sum(i["qty"] * i["price"] for i in cart.values()),
             "error": str(e),
         })
@@ -191,7 +199,11 @@ def htmx_add_to_cart(request):
     from inventory.models import Product
 
     product_id = request.POST.get("product_id")
-    product = Product.objects.get(id=product_id)
+    shop = get_user_shop(request.user)
+    product = Product.objects.get(
+        id=product_id,
+        shop=shop
+    )
 
     cart = request.session.get("cart", {})
     pid = str(product_id)
