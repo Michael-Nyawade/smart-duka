@@ -12,16 +12,11 @@ from inventory.services import InventoryIntelligence
 
 
 def dashboard_view(request):
-
     shop = get_user_shop(request.user)
-
     today = date.today()
 
     # Base queryset (shop + today)
-    sales_today = Sale.objects.filter(
-        shop=shop,
-        created_at__date=today
-    )
+    sales_today = Sale.objects.filter(shop=shop, created_at__date=today)
 
     # Total number of transactions
     total_sales_count = sales_today.count()
@@ -142,17 +137,15 @@ def dashboard_view(request):
     ).order_by('hour')
 
     # DEAD STOCK LOGIC
-    thirty_days_ago = timezone.now() - timedelta(days=30)
+    now = timezone.now()
+    seven_days_ago = now - timedelta(days=7)
+    thirty_days_ago = now - timedelta(days=30)
 
-    dead_stock_products = Product.objects.filter(
-        shop=shop
-    ).annotate(
+    dead_stock_products = Product.objects.filter(shop=shop).annotate(
         last_sold=Max('saleitem__sale__created_at')
     ).filter(
         last_sold__isnull=True
-    ) | Product.objects.filter(
-        shop=shop
-    ).annotate(
+    ) | Product.objects.filter(shop=shop).annotate(
         last_sold=Max('saleitem__sale__created_at')
     ).filter(
         last_sold__lt=thirty_days_ago
@@ -162,6 +155,40 @@ def dashboard_view(request):
     total_outstanding_credit = sum(
         customer.outstanding_balance()
         for customer in Customer.objects.filter(shop=shop)
+    )
+
+    # CREDIT AGING BUCKETS
+    credit_sales = Sale.objects.filter(shop=shop, payment_method='CREDIT')
+
+    total_credit_sales = credit_sales.aggregate(
+        total=Sum(F("items__quantity") * F("items__selling_price"))
+    )["total"] or 0
+
+    total_outstanding_credit = sum(
+        c.outstanding_balance()
+        for c in Customer.objects.filter(shop=shop)
+    )
+
+    now = timezone.now()
+    seven_days_ago = now - timedelta(days=7)
+    thirty_days_ago = now - timedelta(days=30)
+
+    credit_0_7 = sum(
+        s.total_amount()
+        for s in credit_sales.filter(created_at__gte=seven_days_ago)
+    )
+
+    credit_8_30 = sum(
+        s.total_amount()
+        for s in credit_sales.filter(
+            created_at__lt=seven_days_ago,
+            created_at__gte=thirty_days_ago
+        )
+    )
+
+    credit_30_plus = sum(
+        s.total_amount()
+        for s in credit_sales.filter(created_at__lt=thirty_days_ago)
     )
 
     context = {
@@ -177,6 +204,10 @@ def dashboard_view(request):
         'low_stock_count': low_stock_count,
         'reorder_suggestions': reorder_suggestions,
         'total_outstanding_credit': total_outstanding_credit,
+        'credit_0_7': credit_0_7,
+        'credit_8_30': credit_8_30,
+        'credit_30_plus': credit_30_plus,
+        'total_credit_sales': total_credit_sales,
     }
 
     context.update({
@@ -190,7 +221,6 @@ def dashboard_view(request):
 
 
 def inventory_alerts(request):
-
     shop = get_user_shop(request.user)
 
     low_stock = InventoryIntelligence.get_low_stock_products(shop)

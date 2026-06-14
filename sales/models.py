@@ -4,7 +4,7 @@ import uuid
 from django.conf import settings
 from core.models import Shop
 from core.managers import ShopQuerySet
-
+from django.utils import timezone
 
 class Customer(models.Model):
     name = models.CharField(max_length=100)
@@ -116,7 +116,7 @@ class Sale(models.Model):
         choices=PAYMENT_METHODS
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     shift = models.ForeignKey(
         CashierShift,

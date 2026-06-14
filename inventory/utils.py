@@ -6,7 +6,8 @@ def get_low_stock_products():
     return Product.objects.filter(
         # stock_quantity__lte is same as 'stock_quantity <= low_stock_threshold'
         # .F() ==> compare using another database field
-        stock_quantity__lte=models.F('low_stock_threshold')
+        stock_quantity__lte=models.F('low_stock_threshold'),
+        stock_quantity__gt=0
     )
 
 
