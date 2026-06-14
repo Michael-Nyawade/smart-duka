@@ -227,6 +227,8 @@ def dashboard_view(request):
     return render(request, 'dashboard/dashboard.html', context)
 
 
+@login_required
+@allowed_roles(["ADMIN", "MANAGER"])
 def inventory_alerts(request):
     shop = get_user_shop(request.user)
 
@@ -241,17 +243,25 @@ def inventory_alerts(request):
     })
 
 
+def _redirect_by_role(user):
+    if user.is_superuser:
+        return redirect("/admin/")
+
+    role = getattr(user.userprofile, "role", None)
+
+    if role == "CASHIER":
+        return redirect("pos_home")
+
+    if role == "MANAGER":
+        return redirect("dashboard")
+
+    return redirect("dashboard")
+
+
 # POS Login View
 def pos_login_view(request):
     if request.user.is_authenticated:
-        if request.user.is_superuser:
-            return redirect("/admin/")
-        role = request.user.userprofile.role
-        if role == "CASHIER":
-            return redirect("pos_home")
-        if role == "MANAGER":
-            return redirect("dashboard")
-        return redirect("dashboard")
+        return _redirect_by_role(request.user)
 
     error = None
 
@@ -268,7 +278,7 @@ def pos_login_view(request):
             if user.is_superuser:
                 return redirect("/admin/")
 
-            role = user.userprofile.role
+            role = getattr(user.userprofile, "role", None)
 
             if role == "CASHIER":
                 return redirect("pos_home")
