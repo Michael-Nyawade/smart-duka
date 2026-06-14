@@ -10,13 +10,20 @@ class SaleService:
     @transaction.atomic
     def create_sale(*, shop, customer, payment_method, cart, shift=None, user=None):
 
-        # =========================
+        # PHASE 0: CUSTOMER VALIDATION
+        if customer and customer.shop != shop:
+            raise ValidationError(
+                "Customer does not belong to this shop."
+            )
+
         # PHASE 1: VALIDATION ONLY
-        # =========================
         products = {}
 
         for product_id, item in cart.items():
-            product = Product.objects.select_for_update().get(id=product_id)
+            product = Product.objects.select_for_update().get(
+                id=product_id,
+                shop=shop
+            )
 
             qty = item["qty"]
 
@@ -28,9 +35,7 @@ class SaleService:
 
             products[product_id] = product
 
-        # =========================
         # PHASE 2: COMMIT CHANGES
-        # =========================
 
         sale = Sale.objects.create(
             shop=shop,
