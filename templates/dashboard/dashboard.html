@@ -76,6 +76,15 @@
         <h2>{{ total_outstanding_credit }}</h2>
     </div>
 
+    <!-- Credit Aging Section -->
+    <div>
+        <h3>Credit Aging</h3>
+
+        <p>🟢 0 - 7 days: {{ credit_0_7 }}</p>
+        <p>🟠 8 - 30 days: {{ credit_8_30 }}</p>
+        <p>🔴 30+ days: {{ credit_30_plus }}</p>
+    </div>
+
     <!-- Top Products Section -->
     <div class="card mt-4">
         <div class="card-header">
