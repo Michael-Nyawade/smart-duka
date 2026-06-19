@@ -7,22 +7,72 @@
 
 {% block content %}
 
-<div class="text-center mt-5">
+<!-- Hero Section -->
+<section class="hero text-center">
+    <div class="container">
 
-    <h1 class="display-4 fw-bold">SmartDuka</h1>
+        <h1 class="display-4 fw-bold">SmartDuka</h1>
 
-    <p class="lead mt-3">
-        Inventory, Sales and Credit Management System for Small Businesses.
-    </p>
+        <p class="lead mt-3">
+            Inventory, Sales & Credit Management for Small Businesses
+        </p>
 
-    <p class="mt-3">
-        Track stock, manage customer credit, record sales, and understand your real profit.
-    </p>
+        <p class="text-muted">
+            Track stock, manage customer credit, record sales, and understand your real profit.
+        </p>
 
-    <a href="{% url 'pos_login' %}" class="btn btn-primary btn-lg mt-4">
-        Login
-    </a>
+        <a href="{% url 'pos_login' %}" class="btn btn-primary btn-lg mt-4">
+            Login
+        </a>
 
-</div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="mt-5">
+    <div class="container">
+
+        <div class="row g-4">
+
+            <div class="col-md-3">
+                <div class="card h-100 text-center p-3">
+                    <h5>Inventory Management</h5>
+                    <p class="text-muted">
+                        Track stock levels and receive low-stock alerts.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card h-100 text-center p-3">
+                    <h5>Sales Tracking</h5>
+                    <p class="text-muted">
+                        Record cash, mobile money, and credit sales.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card h-100 text-center p-3">
+                    <h5>Credit Management</h5>
+                    <p class="text-muted">
+                        Track customer debts and payment history.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card h-100 text-center p-3">
+                    <h5>Business Insights</h5>
+                    <p class="text-muted">
+                        Understand profit, sales trends, and dead stock.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
 
 {% endblock %}
