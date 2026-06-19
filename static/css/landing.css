@@ -1,0 +1,11 @@
+.hero {
+    padding: 80px 20px;
+}
+
+.hero h1 {
+    font-weight: 700;
+}
+
+.hero p {
+    color: #555;
+}
