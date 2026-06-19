@@ -10,7 +10,7 @@ from sales.models import Sale, SaleItem, Customer
 from inventory.models import Product
 from inventory.services import InventoryIntelligence
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from core.decorators import allowed_roles
@@ -295,3 +295,8 @@ def pos_login_view(request):
 # Landing page view
 def landing_page(request):
     return render(request, "landing.html")
+
+# Logout view
+def logout_view(request):
+    logout(request)
+    return redirect("landing")
