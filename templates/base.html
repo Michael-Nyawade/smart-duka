@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html>
 <head>
     <title>SmartDuka</title>
@@ -11,43 +12,7 @@
 
     <meta name="csrf-token" content="{{ csrf_token }}">
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background: #f5f5f5;
-        }
-
-        .container {
-            width: 90%;
-            margin: auto;
-            padding: 20px;
-        }
-
-        .card {
-            background: white;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .stat {
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        h1, h2 {
-            margin-top: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
     <!-- HTMX script -->
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
