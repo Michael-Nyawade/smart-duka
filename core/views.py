@@ -291,3 +291,7 @@ def pos_login_view(request):
         error = "Invalid username or password"
     
     return render(request, "auth/login.html", {"error": error})
+
+# Landing page view
+def landing_page(request):
+    return render(request, "landing.html")
