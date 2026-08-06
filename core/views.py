@@ -15,6 +15,12 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from core.decorators import allowed_roles
 
+from django.contrib import messages
+from django.db import transaction
+
+from .models import Shop
+from .forms import ShopOwnerRegistrationForm
+
 
 @login_required
 @allowed_roles(["ADMIN", "MANAGER"])
@@ -300,3 +306,37 @@ def landing_page(request):
 def logout_view(request):
     logout(request)
     return redirect("landing")
+
+
+def register_view(request):
+    if request.method == "POST":
+        form = ShopOwnerRegistrationForm(request.POST)
+
+        if form.is_valid():
+            with transaction.atomic():
+                user = form.save()
+
+                shop = Shop.objects.create(
+                    name=form.cleaned_data["shop_name"],
+                    owner_name=form.cleaned_data["owner_name"],
+                )
+
+                user.userprofile.shop = shop
+                user.userprofile.role = "ADMIN"
+                user.userprofile.save()
+
+            messages.success(
+                request,
+                "Registration successful. You can now log in."
+            )
+
+            return redirect("pos_login")
+
+    else:
+        form = ShopOwnerRegistrationForm()
+
+    return render(
+        request,
+        "auth/register.html",
+        {"form": form}
+    )
