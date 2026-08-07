@@ -58,6 +58,8 @@ class Command(BaseCommand):
                 shifts
             )
 
+            # Ensure alert test cases survive sales
+            self.create_alert_test_cases(products)
 
         self.stdout.write(
             self.style.SUCCESS(
@@ -216,15 +218,47 @@ class Command(BaseCommand):
         products
     ):
 
-        for product in products:
+        for index, product in enumerate(products):
 
-            StockMovement.objects.create(
+            quantity = random.randint(50, 200)
+
+            # Create test inventory scenarios
+            if index == 5:
+                # Low stock example
+                quantity = 3
+
+            elif index == 10:
+                # Reorder example
+                quantity = 15
+
+            elif index == 21:
+                # Dead stock example
+                quantity = 146
+
+
+            movement = StockMovement.objects.create(
                 shop=shop,
                 product=product,
                 movement_type="IN",
-                quantity=random.randint(50,200),
+                quantity=quantity,
                 note="Initial stock"
             )
+
+
+            # Make Product 21 look old
+            if index == 21:
+
+                movement.created_at = (
+                    timezone.now()
+                    -
+                    timedelta(days=45)
+                )
+
+                movement.save(
+                    update_fields=[
+                        "created_at"
+                    ]
+                )
 
 
     # -------------------------
@@ -280,6 +314,17 @@ class Command(BaseCommand):
             Customer.objects.filter(shop=shop)
         )
 
+        # Explicitly exclude alert products
+        alert_products = {
+            products[5],
+            products[10],
+            products[21],
+        }
+
+        sale_products = [
+            p for p in products
+            if p not in alert_products
+        ]
 
         for day in range(30):
 
@@ -288,7 +333,6 @@ class Command(BaseCommand):
                 -
                 timedelta(days=day)
             )
-
 
             for _ in range(5):
 
@@ -304,9 +348,7 @@ class Command(BaseCommand):
                     else None
                 )
 
-
-                product=random.choice(products)
-
+                product=random.choice(sale_products)
 
                 cart={
                     str(product.id):{
@@ -317,7 +359,6 @@ class Command(BaseCommand):
                     }
                 }
 
-
                 payment=random.choice(
                     [
                         "CASH",
@@ -325,7 +366,6 @@ class Command(BaseCommand):
                         "CREDIT"
                     ]
                 )
-
 
                 sale=SaleService.create_sale(
                     shop=shop,
@@ -336,7 +376,6 @@ class Command(BaseCommand):
                     user=user
                 )
 
-
                 sale.created_at=sale_date
                 sale.save(
                     update_fields=[
@@ -344,13 +383,11 @@ class Command(BaseCommand):
                     ]
                 )
 
-
                 StockMovement.objects.filter(
                     note=f"Sale {sale.receipt_number}"
                 ).update(
                     created_at=sale_date
                 )
-
 
                 if payment=="CREDIT" and customer:
 
@@ -362,3 +399,35 @@ class Command(BaseCommand):
                         ),
                         notes="Payment"
                     )
+
+
+    # -------------------------
+    # ALERT TEST CASES
+    # -------------------------
+
+    def create_alert_test_cases(self, products):
+
+        product = products[21]
+
+        movement = (
+            StockMovement.objects
+            .filter(
+                product=product,
+                note="Initial stock"
+            )
+            .first()
+        )
+
+        if movement:
+
+            movement.created_at = (
+                timezone.now()
+                -
+                timedelta(days=45)
+            )
+
+            movement.save(
+                update_fields=[
+                    "created_at"
+                ]
+            )
