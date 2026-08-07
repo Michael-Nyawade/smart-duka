@@ -45,6 +45,11 @@
                                 Dashboard
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'product_list' %}">
+                                Inventory
+                            </a>
+                        </li>
                     {% endif %}
 
                     {% if user.userprofile.role == "CASHIER" %}
