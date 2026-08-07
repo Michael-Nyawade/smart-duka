@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views
 
 
 urlpatterns = [
@@ -25,5 +26,11 @@ urlpatterns = [
         "stock/receive/",
         views.stock_receive,
         name="stock_receive"
+    ),
+
+    path(
+        "stock/movements/",
+        views.stock_movement_list,
+        name="stock_movement_list"
     ),
 ]

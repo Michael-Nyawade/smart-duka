@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from core.decorators import allowed_roles
-from core.utils import get_user_shop
+from core.utils import get_user_shop, for_current_shop
 
 from .models import Product, StockMovement
 from .forms import ProductForm, StockReceiveForm
@@ -137,5 +137,26 @@ def stock_receive(request):
         "inventory/stock_receive.html",
         {
             "form": form
+        }
+    )
+
+
+@login_required
+def stock_movement_list(request):
+
+    movements = (
+        for_current_shop(
+            StockMovement.objects.all(),
+            request.user
+        )
+        .select_related("product")
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "inventory/stock_movement_list.html",
+        {
+            "movements": movements
         }
     )
