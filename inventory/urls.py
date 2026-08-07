@@ -3,7 +3,6 @@ from . import views
 
 
 urlpatterns = [
-
     path(
         "products/",
         views.product_list,
@@ -22,4 +21,9 @@ urlpatterns = [
         name="product_update"
     ),
 
+    path(
+        "stock/receive/",
+        views.stock_receive,
+        name="stock_receive"
+    ),
 ]

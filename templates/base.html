@@ -50,6 +50,11 @@
                                 Inventory
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'stock_receive' %}">
+                                Receive Stock
+                            </a>
+                        </li>
                     {% endif %}
 
                     {% if user.userprofile.role == "CASHIER" %}

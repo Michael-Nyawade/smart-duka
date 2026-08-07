@@ -1,18 +1,10 @@
 from django import forms
-from .models import Product, Category
+from .models import Product, StockMovement
 
 
 class ProductForm(forms.ModelForm):
-
-    initial_stock = forms.IntegerField(
-        min_value=0,
-        initial=0,
-        label="Initial Stock"
-    )
-
     class Meta:
         model = Product
-
         fields = [
             "category",
             "name",
@@ -21,49 +13,22 @@ class ProductForm(forms.ModelForm):
             "selling_price",
             "low_stock_threshold",
             "reorder_level",
-            "initial_stock",
         ]
 
-        widgets = {
-            "name": forms.TextInput(
-                attrs={
-                    "class": "form-control"
-                }
-            ),
 
-            "sku": forms.TextInput(
-                attrs={
-                    "class": "form-control"
-                }
-            ),
+class StockReceiveForm(forms.ModelForm):
+    class Meta:
+        model = StockMovement
+        fields = [
+            "product",
+            "quantity",
+            "note",
+        ]
 
-            "buying_price": forms.NumberInput(
-                attrs={
-                    "class": "form-control"
-                }
-            ),
+    def __init__(self, *args, shop=None, **kwargs):
+        super().__init__(*args, **kwargs)
 
-            "selling_price": forms.NumberInput(
-                attrs={
-                    "class": "form-control"
-                }
-            ),
-
-            "low_stock_threshold": forms.NumberInput(
-                attrs={
-                    "class": "form-control"
-                }
-            ),
-
-            "reorder_level": forms.NumberInput(
-                attrs={
-                    "class": "form-control"
-                }
-            ),
-
-            "category": forms.Select(
-                attrs={
-                    "class": "form-select"
-                }
-            ),
-        }
+        if shop:
+            self.fields["product"].queryset = Product.objects.filter(
+                shop=shop
+            )

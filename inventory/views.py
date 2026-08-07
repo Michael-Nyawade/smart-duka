@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from core.decorators import allowed_roles
 from core.utils import get_user_shop
 
-from .models import Product
-from .forms import ProductForm
+from .models import Product, StockMovement
+from .forms import ProductForm, StockReceiveForm
 
 
 @login_required
@@ -95,5 +96,46 @@ def product_update(request, pk):
         {
             "form": form,
             "title": "Edit Product"
+        }
+    )
+
+
+@login_required
+def stock_receive(request):
+    shop = get_user_shop(request.user)
+
+    if request.method == "POST":
+        form = StockReceiveForm(
+            request.POST,
+            shop=shop
+        )
+
+        if form.is_valid():
+            movement = form.save(commit=False)
+
+            movement.shop = shop
+            movement.movement_type = "IN"
+
+            movement.save()
+
+            messages.success(
+                request,
+                "Stock received successfully."
+            )
+
+            return redirect(
+                "product_list"
+            )
+
+    else:
+        form = StockReceiveForm(
+            shop=shop
+        )
+
+    return render(
+        request,
+        "inventory/stock_receive.html",
+        {
+            "form": form
         }
     )
