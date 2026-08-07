@@ -11,6 +11,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+
     list_display = (
         'name',
         'category',
@@ -26,11 +27,20 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('category',)
     search_fields = ('name', 'sku')
 
-    # All stock changes happen through Stock Movements
     readonly_fields = ('stock_quantity',)
 
     list_per_page = 20
-    ordering = ('name',) 
+    ordering = ('name',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(
+            shop=get_user_shop(request.user)
+        )
 
     def low_stock_status(self, obj):
         return obj.is_low_stock()
@@ -44,14 +54,15 @@ class ProductAdmin(admin.ModelAdmin):
     dead_stock_status.boolean = True
     dead_stock_status.short_description = 'Dead Stock'
 
-    # Ensure new products are assigned to the current user's shop
     def save_model(self, request, obj, form, change):
-        obj.shop = get_user_shop(request.user)
+        if not request.user.is_superuser:
+            obj.shop = get_user_shop(request.user)
+
         super().save_model(request, obj, form, change)
 
-
 @admin.register(StockMovement)
-class StockMovement(admin.ModelAdmin):
+class StockMovementAdmin(admin.ModelAdmin):
+
     list_display = (
         'product',
         'movement_type',
@@ -59,5 +70,21 @@ class StockMovement(admin.ModelAdmin):
         'created_at',
     )
 
-    list_filter = ('movement_type', 'created_at')
-    search_fields = ('product__name',)
+    list_filter = (
+        'movement_type',
+        'created_at',
+    )
+
+    search_fields = (
+        'product__name',
+    )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(
+            shop=get_user_shop(request.user)
+        )

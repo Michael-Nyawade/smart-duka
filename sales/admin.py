@@ -33,6 +33,16 @@ class SaleAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(
+            shop=get_user_shop(request.user)
+        )
 
 
 @admin.register(Customer)
@@ -59,6 +69,16 @@ class CustomerAdmin(admin.ModelAdmin):
         if not obj.shop:
             obj.shop = get_user_shop(request.user)
         super().save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(
+            shop=get_user_shop(request.user)
+        )
 
 
 @admin.register(CreditPayment)
