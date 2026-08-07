@@ -12,26 +12,66 @@ from services.sale_service import SaleService
 
 
 class Command(BaseCommand):
-    help = "Seed SmartDuka test data (FULL RESET MODE)"
+    help = "Seed SmartDuka multi-shop test data"
 
     def handle(self, *args, **kwargs):
+
         self.stdout.write("Resetting database...")
 
         self.clear_data()
-        shop, users = self.create_shop_and_users()
+
         categories = self.create_categories()
-        products = self.create_products(shop, categories)
-        self.create_initial_stock(shop, products)
-        self.create_customers(shop)
-        shifts = self.create_shifts(users)
-        self.create_sales(shop, users, products, shifts)
 
-        self.stdout.write(self.style.SUCCESS("SmartDuka seed completed successfully"))
+        shop_a, users_a = self.create_shop(
+            "SmartDuka Downtown",
+            "Downtown Owner"
+        )
 
-    # ---------------------------
+        shop_b, users_b = self.create_shop(
+            "SmartDuka Riverside",
+            "Riverside Owner"
+        )
+
+        for shop, users in [
+            (shop_a, users_a),
+            (shop_b, users_b),
+        ]:
+
+            products = self.create_products(
+                shop,
+                categories
+            )
+
+            self.create_initial_stock(
+                shop,
+                products
+            )
+
+            self.create_customers(shop)
+
+            shifts = self.create_shifts(users)
+
+            self.create_sales(
+                shop,
+                users,
+                products,
+                shifts
+            )
+
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "SmartDuka seed completed"
+            )
+        )
+
+
+    # -------------------------
     # RESET
-    # ---------------------------
+    # -------------------------
+
     def clear_data(self):
+
         CreditPayment.objects.all().delete()
         Sale.objects.all().delete()
         StockMovement.objects.all().delete()
@@ -40,153 +80,254 @@ class Command(BaseCommand):
         Customer.objects.all().delete()
         CashierShift.objects.all().delete()
         UserProfile.objects.all().delete()
-        User.objects.exclude(is_superuser=True).delete()
+        User.objects.all().delete()
         Shop.objects.all().delete()
 
-    # ---------------------------
+
+    # -------------------------
     # SHOP + USERS
-    # ---------------------------
-    def create_shop_and_users(self):
+    # -------------------------
+
+    def create_shop(self, name, owner):
+
         shop = Shop.objects.create(
-            name="SmartDuka Demo Shop",
-            owner_name="Admin"
+            name=name,
+            owner_name=owner
         )
+
+        username = name.lower().replace(" ", "_")
 
         users = {}
 
         users["admin"] = User.objects.create_superuser(
-            username="admin",
-            email="admin@smartduka.com",
+            username=f"{username}_admin",
+            email=f"{username}@smartduka.com",
             password="admin123"
         )
-        users["manager"] = User.objects.create_user("manager", password="admin123")
-        users["cashier1"] = User.objects.create_user("cashier1", password="admin123")
-        users["cashier2"] = User.objects.create_user("cashier2", password="admin123")
 
-        # override signal-created profiles
-        for u in users.values():
-            profile = UserProfile.objects.get(user=u)
+        users["manager"] = User.objects.create_user(
+            username=f"{username}_manager",
+            password="admin123"
+        )
+
+        users["cashier"] = User.objects.create_user(
+            username=f"{username}_cashier",
+            password="admin123"
+        )
+
+
+        roles = {
+            "manager": "MANAGER",
+            "cashier": "CASHIER",
+        }
+
+
+        for key, user in users.items():
+
+            profile, _ = UserProfile.objects.get_or_create(
+                user=user
+            )
+
             profile.shop = shop
+
+            if key in roles:
+                profile.role = roles[key]
+
+            else:
+                profile.role = "ADMIN"
+
             profile.save()
 
-        # assign roles
-        UserProfile.objects.filter(user=users["manager"]).update(role="MANAGER")
-        UserProfile.objects.filter(user=users["cashier1"]).update(role="CASHIER")
-        UserProfile.objects.filter(user=users["cashier2"]).update(role="CASHIER")
 
         return shop, users
 
-    # ---------------------------
-    # CATEGORIES
-    # ---------------------------
-    def create_categories(self):
-        names = [
-            "Beverages", "Snacks", "Dairy", "Bread",
-            "Cooking Oil", "Rice", "Sugar", "Soap",
-            "Cosmetics", "Stationery"
-        ]
-        return [Category.objects.create(name=n) for n in names]
 
-    # ---------------------------
+    # -------------------------
+    # CATEGORIES
+    # -------------------------
+
+    def create_categories(self):
+
+        names = [
+            "Beverages",
+            "Snacks",
+            "Dairy",
+            "Bread",
+            "Oil",
+            "Rice",
+            "Sugar",
+            "Soap",
+            "Cosmetics",
+            "Stationery",
+        ]
+
+        return [
+            Category.objects.get_or_create(name=n)[0]
+            for n in names
+        ]
+
+
+    # -------------------------
     # PRODUCTS
-    # ---------------------------
-    def create_products(self, shop, categories):
+    # -------------------------
+
+    def create_products(
+        self,
+        shop,
+        categories
+    ):
+
         products = []
 
-        for i in range(150):
-            cat = random.choice(categories)
+        for i in range(50):
 
-            buying = random.randint(20, 500)
-            selling = buying + random.randint(5, 200)
+            category = random.choice(categories)
 
-            p = Product.objects.create(
-                shop=shop,
-                category=cat,
-                name=f"{cat.name} Product {i}",
-                sku=f"SKU-{i:04d}",
-                buying_price=buying,
-                selling_price=selling,
-                stock_quantity=0,
-                low_stock_threshold=random.randint(5, 15),
-                reorder_level=random.randint(20, 40),
+            buying = random.randint(
+                20,
+                500
             )
-            products.append(p)
+
+            product = Product.objects.create(
+                shop=shop,
+                category=category,
+                name=f"{shop.name} Product {i}",
+                sku=f"{shop.name[:3].upper()}-{random.randint(100000,999999)}-{i}",
+                buying_price=buying,
+                selling_price=buying + random.randint(5,100),
+                stock_quantity=0,
+                low_stock_threshold=10,
+                reorder_level=20,
+            )
+
+            products.append(product)
+
 
         return products
 
-    # ---------------------------
-    # INITIAL STOCK
-    # ---------------------------
-    def create_initial_stock(self, shop, products):
-        for p in products:
-            qty = random.randint(50, 300)
+
+    # -------------------------
+    # STOCK
+    # -------------------------
+
+    def create_initial_stock(
+        self,
+        shop,
+        products
+    ):
+
+        for product in products:
 
             StockMovement.objects.create(
                 shop=shop,
-                product=p,
+                product=product,
                 movement_type="IN",
-                quantity=qty,
+                quantity=random.randint(50,200),
                 note="Initial stock"
             )
 
-    # ---------------------------
+
+    # -------------------------
     # CUSTOMERS
-    # ---------------------------
+    # -------------------------
+
     def create_customers(self, shop):
-        for i in range(25):
+
+        for i in range(10):
+
             Customer.objects.create(
                 shop=shop,
-                name=f"Customer {i}",
-                phone_number=f"07{random.randint(10000000, 99999999)}"
+                name=f"{shop.name} Customer {i}",
+                phone_number=f"07000000{i}"
             )
 
-    # ---------------------------
-    # CASHIER SHIFTS
-    # ---------------------------
+
+    # -------------------------
+    # SHIFTS
+    # -------------------------
+
     def create_shifts(self, users):
-        shifts = []
-        for u in users.values():
-            shift = CashierShift.objects.create(
-                user=u,
-                opening_cash=1000,
-                is_active=False,
-                closed_at=timezone.now()
+
+        shifts=[]
+
+        for user in users.values():
+
+            shifts.append(
+                CashierShift.objects.create(
+                    user=user,
+                    opening_cash=1000,
+                    closed_at=timezone.now(),
+                    is_active=False
+                )
             )
-            shifts.append(shift)
+
         return shifts
 
-    # ---------------------------
-    # SALES GENERATION
-    # ---------------------------
-    def create_sales(self, shop, users, products, shifts):
-        customers = list(Customer.objects.filter(shop=shop))
 
-        payment_methods = ["CASH", "MOBILE", "CREDIT"]
+    # -------------------------
+    # SALES
+    # -------------------------
 
-        for day in range(60):
-            sale_date = timezone.now() - timedelta(days=day)
+    def create_sales(
+        self,
+        shop,
+        users,
+        products,
+        shifts
+    ):
 
-            for _ in range(random.randint(5, 15)):
-                user = random.choice(list(users.values()))
-                shift = random.choice(shifts)
-                customer = random.choice(customers) if random.random() < 0.3 else None
+        customers=list(
+            Customer.objects.filter(shop=shop)
+        )
 
-                cart = {}
-                items_count = random.randint(1, 4)
 
-                for _ in range(items_count):
-                    p = random.choice(products)
-                    cart[str(p.id)] = {
-                        "qty": random.randint(1, 5),
-                        "price": float(p.selling_price)
+        for day in range(30):
+
+            sale_date = (
+                timezone.now()
+                -
+                timedelta(days=day)
+            )
+
+
+            for _ in range(5):
+
+                user=random.choice(
+                    list(users.values())
+                )
+
+                shift=random.choice(shifts)
+
+                customer=(
+                    random.choice(customers)
+                    if random.random() < 0.3
+                    else None
+                )
+
+
+                product=random.choice(products)
+
+
+                cart={
+                    str(product.id):{
+                        "qty":random.randint(1,3),
+                        "price":float(
+                            product.selling_price
+                        )
                     }
+                }
 
-                payment = random.choices(
-                    payment_methods,
-                    weights=[50, 25, 25]
-                )[0]
 
-                sale = SaleService.create_sale(
+                payment=random.choice(
+                    [
+                        "CASH",
+                        "MOBILE",
+                        "CREDIT"
+                    ]
+                )
+
+
+                sale=SaleService.create_sale(
                     shop=shop,
                     customer=customer,
                     payment_method=payment,
@@ -195,26 +336,29 @@ class Command(BaseCommand):
                     user=user
                 )
 
-                # -----------------------
-                # BACKDATE SALE
-                # -----------------------
-                sale.created_at = sale_date
-                sale.save(update_fields=["created_at"])
 
-                # -----------------------
-                # BACKDATE STOCK MOVEMENTS
-                # -----------------------
+                sale.created_at=sale_date
+                sale.save(
+                    update_fields=[
+                        "created_at"
+                    ]
+                )
+
+
                 StockMovement.objects.filter(
                     note=f"Sale {sale.receipt_number}"
-                ).update(created_at=sale_date)
+                ).update(
+                    created_at=sale_date
+                )
 
-                # -----------------------
-                # CREDIT PAYMENTS
-                # -----------------------
-                if payment == "CREDIT" and customer:
-                    if random.random() < 0.5:
-                        CreditPayment.objects.create(
-                            customer=customer,
-                            amount=random.randint(100, 1000),
-                            notes="Partial payment"
-                        )
+
+                if payment=="CREDIT" and customer:
+
+                    CreditPayment.objects.create(
+                        customer=customer,
+                        amount=random.randint(
+                            100,
+                            500
+                        ),
+                        notes="Payment"
+                    )
