@@ -32,12 +32,12 @@ SECRET_KEY = os.getenv(
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv(
-    "DEBUG",
-    "True"
+    "DJANGO_DEBUG",
+    "False"
 ) == "True"
 
 ALLOWED_HOSTS = os.getenv(
-    "ALLOWED_HOSTS",
+    "DJANGO_ALLOWED_HOSTS",
     "127.0.0.1,localhost"
 ).split(",")
 
@@ -159,3 +159,16 @@ STATICFILES_STORAGE = (
 # Login Redirects
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
+
+# Production security settings
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
