@@ -160,3 +160,37 @@ def stock_movement_list(request):
             "movements": movements
         }
     )
+
+
+@login_required
+def inventory_alerts(request):
+
+    products = for_current_shop(
+        Product.objects.all(),
+        request.user
+    )
+
+    low_stock_products = [
+        p for p in products
+        if p.is_low_stock()
+    ]
+
+    reorder_products = [
+        p for p in products
+        if p.needs_reorder()
+    ]
+
+    dead_stock_products = [
+        p for p in products
+        if p.is_dead_stock()
+    ]
+
+    return render(
+        request,
+        "inventory/inventory_alerts.html",
+        {
+            "low_stock_products": low_stock_products,
+            "reorder_products": reorder_products,
+            "dead_stock_products": dead_stock_products,
+        }
+    )

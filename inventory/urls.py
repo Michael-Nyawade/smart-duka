@@ -33,4 +33,10 @@ urlpatterns = [
         views.stock_movement_list,
         name="stock_movement_list"
     ),
+
+    path(
+        "alerts/",
+        views.inventory_alerts,
+        name="inventory_alerts"
+    ),
 ]

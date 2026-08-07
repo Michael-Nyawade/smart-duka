@@ -46,12 +46,21 @@ class Product(models.Model):
         return self.stock_quantity <= self.low_stock_threshold
 
     def is_dead_stock(self):
-        latest_movement = self.stock_movements.order_by('-created_at').first()
+
+        if self.stock_quantity <= 0:
+            return False
+
+        latest_movement = (
+            self.stock_movements
+            .order_by("-created_at")
+            .first()
+        )
 
         if not latest_movement:
-            return True
+            return False
 
         dead_stock_threshold = timezone.now() - timedelta(days=30)
+
         return latest_movement.created_at < dead_stock_threshold
 
     def needs_reorder(self):

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Inventory Alerts</h2>
+
+
+<h4 class="mt-4">
+    ⚠️ Low Stock Products
+</h4>
+
+<table class="table table-striped">
+
+<tr>
+    <th>Product</th>
+    <th>Current Stock</th>
+    <th>Threshold</th>
+</tr>
+
+{% for product in low_stock_products %}
+
+<tr>
+    <td>{{ product.name }}</td>
+    <td>{{ product.stock_quantity }}</td>
+    <td>{{ product.low_stock_threshold }}</td>
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="3">
+All stock levels are healthy.
+</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+
+
+<h4 class="mt-4">
+    📦 Reorder Suggestions
+</h4>
+
+<table class="table table-striped">
+
+<tr>
+    <th>Product</th>
+    <th>Current Stock</th>
+    <th>Reorder Level</th>
+</tr>
+
+
+{% for product in reorder_products %}
+
+<tr>
+    <td>{{ product.name }}</td>
+    <td>{{ product.stock_quantity }}</td>
+    <td>{{ product.reorder_level }}</td>
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="3">
+No reorder needed.
+</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+
+
+<h4 class="mt-4">
+    🧱 Dead Stock
+</h4>
+
+<table class="table table-striped">
+
+<tr>
+    <th>Product</th>
+    <th>Current Stock</th>
+</tr>
+
+
+{% for product in dead_stock_products %}
+
+<tr>
+    <td>{{ product.name }}</td>
+    <td>{{ product.stock_quantity }}</td>
+</tr>
+
+
+{% empty %}
+
+<tr>
+<td colspan="2">
+No dead stock detected.
+</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+
+{% endblock %}

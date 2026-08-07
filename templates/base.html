@@ -60,6 +60,11 @@
                                 Stock History
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'inventory_alerts' %}">
+                                Alerts
+                            </a>
+                        </li>
                     {% endif %}
 
                     {% if user.userprofile.role == "CASHIER" %}
