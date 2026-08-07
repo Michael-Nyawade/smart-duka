@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from core.utils import get_user_shop, for_current_shop
 from inventory.models import Product
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def product_list(request):
     # Get the shop associated with the current user
     shop = get_user_shop(request.user)
