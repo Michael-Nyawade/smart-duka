@@ -22,22 +22,33 @@
 
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-    <div class="container">
+<nav class="site-navbar">
+    <div class="site-navbar-inner">
 
-        <a class="navbar-brand fw-bold" href="{% url 'landing' %}">
-            SmartDuka
+        <a class="site-brand" href="{% url 'landing' %}">
+            <span class="site-brand-mark">S</span>
+            <span>SmartDuka</span>
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
+        <button
+            class="navbar-toggle"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
 
-            <ul class="navbar-nav me-auto">
+            {% if user.is_authenticated %}
 
-                {% if user.is_authenticated %}
+                <ul class="navbar-nav me-auto site-nav-links">
 
                     {% if user.is_superuser or user.userprofile.role == "MANAGER" %}
                         <li class="nav-item">
@@ -45,21 +56,25 @@
                                 Dashboard
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'product_list' %}">
                                 Inventory
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'stock_receive' %}">
                                 Receive Stock
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'stock_movement_list' %}">
                                 Stock History
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'inventory_alerts' %}">
                                 Alerts
@@ -75,21 +90,22 @@
                         </li>
                     {% endif %}
 
-                {% endif %}
+                </ul>
 
-            </ul>
+                <div class="site-nav-actions">
+                    <a class="nav-link site-logout" href="{% url 'logout' %}">
+                        Logout
+                    </a>
+                </div>
 
-            <ul class="navbar-nav">
+            {% else %}
 
-                {% if user.is_authenticated %}
-
+                <ul class="navbar-nav ms-auto site-nav-links">
                     <li class="nav-item">
-                        <a class="nav-link text-danger" href="{% url 'logout' %}">
-                            Logout
+                        <a class="nav-link" href="{% url 'landing' %}#features">
+                            Features
                         </a>
                     </li>
-
-                {% else %}
 
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'pos_login' %}">
@@ -97,18 +113,24 @@
                         </a>
                     </li>
 
-                {% endif %}
+                    <li class="nav-item">
+                        <a class="site-nav-cta" href="{% url 'pos_login' %}">
+                            Get started
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    </li>
+                </ul>
 
-            </ul>
+            {% endif %}
 
         </div>
     </div>
 </nav>
 
-<div class="container mt-4">
+<main class="site-main">
     {% block content %}
     {% endblock %}
-</div>
+</main>
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -7,72 +7,297 @@
 
 {% block content %}
 
-<!-- Hero Section -->
-<section class="hero text-center">
-    <div class="container">
+<div class="landing-page">
 
-        <h1 class="display-4 fw-bold">SmartDuka</h1>
+    <!-- Hero -->
+    <section class="landing-hero">
+        <div class="hero-content">
 
-        <p class="lead mt-3">
-            Inventory, Sales & Credit Management for Small Businesses
-        </p>
-
-        <p class="text-muted">
-            Track stock, manage customer credit, record sales, and understand your real profit.
-        </p>
-
-        <a href="{% url 'pos_login' %}" class="btn btn-primary btn-lg mt-4">
-            Login
-        </a>
-
-    </div>
-</section>
-
-<!-- Features Section -->
-<section class="mt-5">
-    <div class="container">
-
-        <div class="row g-4">
-
-            <div class="col-md-3">
-                <div class="card h-100 text-center p-3">
-                    <h5>Inventory Management</h5>
-                    <p class="text-muted">
-                        Track stock levels and receive low-stock alerts.
-                    </p>
-                </div>
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                Simple tools for smarter shops
             </div>
 
-            <div class="col-md-3">
-                <div class="card h-100 text-center p-3">
-                    <h5>Sales Tracking</h5>
-                    <p class="text-muted">
-                        Record cash, mobile money, and credit sales.
-                    </p>
-                </div>
+            <h1>
+                Run your shop
+                <span>smarter.</span>
+            </h1>
+
+            <p class="hero-description">
+                SmartDuka brings inventory, sales, customer credit,
+                and business insights together in one simple system.
+            </p>
+
+            <div class="hero-actions">
+                <a href="{% url 'pos_login' %}" class="hero-btn hero-btn-primary">
+                    Get started
+                    <span aria-hidden="true">→</span>
+                </a>
+
+                <a href="#features" class="hero-btn hero-btn-secondary">
+                    Explore features
+                </a>
             </div>
 
-            <div class="col-md-3">
-                <div class="card h-100 text-center p-3">
-                    <h5>Credit Management</h5>
-                    <p class="text-muted">
-                        Track customer debts and payment history.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card h-100 text-center p-3">
-                    <h5>Business Insights</h5>
-                    <p class="text-muted">
-                        Understand profit, sales trends, and dead stock.
-                    </p>
-                </div>
+            <div class="hero-note">
+                <span>✓</span>
+                Built for everyday business operations
             </div>
 
         </div>
 
-    </div>
-</section>
+        <!-- Product Preview -->
+        <div class="hero-preview">
+
+            <div class="preview-window">
+
+                <div class="preview-topbar">
+                    <div class="preview-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                    <div class="preview-title">
+                        SmartDuka dashboard
+                    </div>
+                </div>
+
+                <div class="preview-body">
+
+                    <div class="preview-heading">
+                        <div>
+                            <small>Sample overview</small>
+                            <h3>Good morning</h3>
+                        </div>
+
+                        <div class="preview-date">
+                            Today
+                        </div>
+                    </div>
+
+                    <div class="preview-stats">
+
+                        <div class="preview-stat">
+                            <small>Today's sales</small>
+                            <strong>KSh 24,850</strong>
+                            <span class="positive">+12.5%</span>
+                        </div>
+
+                        <div class="preview-stat">
+                            <small>Products</small>
+                            <strong>248</strong>
+                            <span>In inventory</span>
+                        </div>
+
+                        <div class="preview-stat">
+                            <small>Credit</small>
+                            <strong>KSh 8,420</strong>
+                            <span>Outstanding</span>
+                        </div>
+
+                    </div>
+
+                    <div class="preview-chart">
+
+                        <div class="chart-header">
+                            <div>
+                                <small>Sales overview</small>
+                                <strong>This week</strong>
+                            </div>
+                        </div>
+
+                        <div class="chart-bars">
+                            <span style="height: 38%;"></span>
+                            <span style="height: 55%;"></span>
+                            <span style="height: 46%;"></span>
+                            <span style="height: 72%;"></span>
+                            <span style="height: 61%;"></span>
+                            <span style="height: 84%;"></span>
+                            <span style="height: 70%;"></span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="preview-float preview-float-stock">
+                <span class="float-icon">✓</span>
+                <div>
+                    <strong>Stock updated</strong>
+                    <small>Just now</small>
+                </div>
+            </div>
+
+            <div class="preview-float preview-float-sale">
+                <span class="float-icon">↗</span>
+                <div>
+                    <strong>New sale</strong>
+                    <small>KSh 3,450</small>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- Value Strip -->
+    <section class="value-strip">
+
+        <div class="value-item">
+            <span class="value-number">01</span>
+            <div>
+                <strong>Know your stock</strong>
+                <small>Stay ahead of shortages</small>
+            </div>
+        </div>
+
+        <div class="value-item">
+            <span class="value-number">02</span>
+            <div>
+                <strong>Track every sale</strong>
+                <small>Keep your numbers clear</small>
+            </div>
+        </div>
+
+        <div class="value-item">
+            <span class="value-number">03</span>
+            <div>
+                <strong>Manage credit</strong>
+                <small>Never lose track of debts</small>
+            </div>
+        </div>
+
+        <div class="value-item">
+            <span class="value-number">04</span>
+            <div>
+                <strong>Understand your business</strong>
+                <small>Make better decisions</small>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- Features -->
+    <section class="features-section" id="features">
+
+        <div class="section-heading">
+            <div>
+                <span class="section-eyebrow">Everything in one place</span>
+                <h2>Tools that keep your business moving.</h2>
+            </div>
+
+            <p>
+                Spend less time trying to keep track of your business
+                and more time running it.
+            </p>
+        </div>
+
+        <div class="feature-grid">
+
+            <article class="feature-card">
+                <div class="feature-icon">▦</div>
+
+                <span class="feature-number">01</span>
+
+                <h3>Inventory management</h3>
+
+                <p>
+                    Keep an accurate picture of what is in stock,
+                    what is moving, and what needs attention.
+                </p>
+
+                <div class="feature-link">
+                    Track your stock
+                </div>
+            </article>
+
+
+            <article class="feature-card">
+                <div class="feature-icon">↗</div>
+
+                <span class="feature-number">02</span>
+
+                <h3>Sales tracking</h3>
+
+                <p>
+                    Record your daily sales and keep cash,
+                    mobile money, and credit transactions organized.
+                </p>
+
+                <div class="feature-link">
+                    Stay on top of sales
+                </div>
+            </article>
+
+
+            <article class="feature-card">
+                <div class="feature-icon">◷</div>
+
+                <span class="feature-number">03</span>
+
+                <h3>Customer credit</h3>
+
+                <p>
+                    Know who owes you, how much they owe,
+                    and keep payment history in one place.
+                </p>
+
+                <div class="feature-link">
+                    Manage credit
+                </div>
+            </article>
+
+
+            <article class="feature-card">
+                <div class="feature-icon">⌁</div>
+
+                <span class="feature-number">04</span>
+
+                <h3>Business insights</h3>
+
+                <p>
+                    Turn your sales and inventory data into
+                    useful information for everyday decisions.
+                </p>
+
+                <div class="feature-link">
+                    Understand your numbers
+                </div>
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+
+        <div>
+            <span class="section-eyebrow">Ready when you are</span>
+
+            <h2>
+                Make your next business decision
+                with better information.
+            </h2>
+
+            <p>
+                SmartDuka gives you the tools to manage the
+                day-to-day without making things complicated.
+            </p>
+        </div>
+
+        <a href="{% url 'pos_login' %}" class="hero-btn hero-btn-primary">
+            Login to SmartDuka
+            <span aria-hidden="true">→</span>
+        </a>
+
+    </section>
+
+</div>
 
 {% endblock %}
