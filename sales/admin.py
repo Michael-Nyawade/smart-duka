@@ -33,7 +33,7 @@ class SaleAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
-    
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
 
@@ -93,6 +93,25 @@ class CreditPaymentAdmin(admin.ModelAdmin):
         'customer__name',
     )
 
+    # Enforce shop assignment via the related customer on save
+    def save_model(self, request, obj, form, change):
+        if not request.user.is_superuser and obj.customer:
+            obj.customer = Customer.objects.filter(
+                pk=obj.customer.pk,
+                shop=get_user_shop(request.user)
+            ).first()
+        super().save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(
+            customer__shop=get_user_shop(request.user)
+        )
+
 
 @admin.register(CashierShift)
 class CashierShiftAdmin(admin.ModelAdmin):
@@ -106,6 +125,16 @@ class CashierShiftAdmin(admin.ModelAdmin):
     search_fields = (
         'user__username',
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+
+        return qs.filter(
+            user__userprofile__shop=get_user_shop(request.user)
+        )
 
 
 @admin.register(AuditLog)
