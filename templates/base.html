@@ -50,7 +50,7 @@
 
                 <ul class="navbar-nav me-auto site-nav-links">
 
-                    {% if user.is_superuser or user.userprofile.role == "MANAGER" %}
+                    {% if user.is_superuser or user.userprofile.role == "MANAGER" or user.userprofile.role == "ADMIN" %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'dashboard' %}">
                                 Dashboard
@@ -82,7 +82,7 @@
                         </li>
                     {% endif %}
 
-                    {% if user.userprofile.role == "CASHIER" %}
+                    {% if user.is_superuser or user.userprofile.role == "CASHIER" or user.userprofile.role == "MANAGER" or user.userprofile.role == "ADMIN" %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'pos_home' %}">
                                 POS

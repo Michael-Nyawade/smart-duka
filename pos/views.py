@@ -20,7 +20,7 @@ from core.decorators import allowed_roles
 
 
 @login_required
-@allowed_roles(["CASHIER", "MANAGER"])
+@allowed_roles(["CASHIER", "MANAGER", "ADMIN"])
 def pos_home(request):
     products = for_current_shop(Product.objects.all(), request.user)
     cart = request.session.get("cart", {})

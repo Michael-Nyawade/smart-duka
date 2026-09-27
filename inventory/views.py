@@ -10,7 +10,7 @@ from .forms import ProductForm, StockReceiveForm
 
 
 @login_required
-@allowed_roles(["MANAGER"])
+@allowed_roles(["ADMIN", "MANAGER"])
 def product_list(request):
 
     shop = get_user_shop(request.user)
@@ -27,7 +27,7 @@ def product_list(request):
 
 
 @login_required
-@allowed_roles(["MANAGER"])
+@allowed_roles(["ADMIN", "MANAGER"])
 def product_create(request):
 
     shop = get_user_shop(request.user)
@@ -61,7 +61,7 @@ def product_create(request):
 
 
 @login_required
-@allowed_roles(["MANAGER"])
+@allowed_roles(["ADMIN", "MANAGER"])
 def product_update(request, pk):
 
     shop = get_user_shop(request.user)
@@ -101,6 +101,7 @@ def product_update(request, pk):
 
 
 @login_required
+@allowed_roles(["ADMIN", "MANAGER"])
 def stock_receive(request):
     shop = get_user_shop(request.user)
 
@@ -142,6 +143,7 @@ def stock_receive(request):
 
 
 @login_required
+@allowed_roles(["ADMIN", "MANAGER"])
 def stock_movement_list(request):
 
     movements = (
@@ -158,39 +160,5 @@ def stock_movement_list(request):
         "inventory/stock_movement_list.html",
         {
             "movements": movements
-        }
-    )
-
-
-@login_required
-def inventory_alerts(request):
-
-    products = for_current_shop(
-        Product.objects.all(),
-        request.user
-    )
-
-    low_stock_products = [
-        p for p in products
-        if p.is_low_stock()
-    ]
-
-    reorder_products = [
-        p for p in products
-        if p.needs_reorder()
-    ]
-
-    dead_stock_products = [
-        p for p in products
-        if p.is_dead_stock()
-    ]
-
-    return render(
-        request,
-        "inventory/inventory_alerts.html",
-        {
-            "low_stock_products": low_stock_products,
-            "reorder_products": reorder_products,
-            "dead_stock_products": dead_stock_products,
         }
     )
