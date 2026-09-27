@@ -169,6 +169,19 @@ h2 {
     margin-top: 0;
 }
 
+/* Desktop: always show the nav links + logout, no toggle needed */
+@media (min-width: 992px) {
+    .site-navbar .navbar-collapse {
+        display: flex !important;
+        flex: 1;
+        padding: 0 !important;
+    }
+
+    .site-navbar .navbar-nav {
+        flex-direction: row !important;
+    }
+}
+
 @media (max-width: 991px) {
     .site-navbar-inner {
         min-height: 64px;
