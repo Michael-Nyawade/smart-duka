@@ -1,60 +1,55 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
 
-{% block content %}
-
-<div class="row justify-content-center">
-    <div class="col-md-4">
-
-        <div class="card mt-5">
-            <h2 class="mb-4">SmartDuka Login</h2>
-
-            {% if error %}
-                <div class="alert alert-danger">
-                    {{ error }}
-                </div>
-            {% endif %}
-
-            <form method="POST">
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    <input
-                        type="text"
-                        name="username"
-                        class="form-control"
-                        placeholder="Username"
-                        required
-                    >
-                </div>
-
-                <div class="mb-3">
-                    <input
-                        type="password"
-                        name="password"
-                        class="form-control"
-                        placeholder="Password"
-                        required
-                    >
-                </div>
-
-                <button
-                    type="submit"
-                    class="btn btn-primary w-100"
-                >
-                    Login
-                </button>
-            </form>
-
-            <p class="mt-3 text-center">
-                Don't have an account?
-                <a href="{% url 'register' %}">
-                    Register
-                </a>
-            </p>
-
-        </div>
-
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="site-brand-mark">S</span>
+      <span>SmartDuka</span>
     </div>
+
+    <h2 class="auth-title">Welcome back</h2>
+    <p class="auth-subtitle">Log in to manage your shop.</p>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label for="id_username">Username</label>
+        <input
+          type="text"
+          name="username"
+          id="id_username"
+          class="form-control"
+          placeholder="e.g. shopowner"
+          required
+          autofocus
+        />
+      </div>
+
+      <div class="mb-3">
+        <label for="id_password">Password</label>
+        <input
+          type="password"
+          name="password"
+          id="id_password"
+          class="form-control"
+          placeholder="Your password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Log in</button>
+    </form>
+
+    <p class="auth-footer">
+      Don't have a shop account yet?
+      <a href="{% url 'register' %}">Create one</a>
+    </p>
+  </div>
 </div>
 
 {% endblock %}
