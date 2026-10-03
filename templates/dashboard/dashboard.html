@@ -1,237 +1,260 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <div class="container mt-4">
+  <div class="dash-header">
+    <h2 class="mb-0">Dashboard</h2>
+    <span class="dash-date">{% now "l, j F Y" %}</span>
+  </div>
 
-    <h2 class="mb-4">SmartDuka Dashboard</h2>
+  {% if low_stock_count > 0 %}
+  <div class="dash-alert-banner">
+    🚨 {{ low_stock_count }} product(s) need reordering
+  </div>
+  {% endif %}
 
-    <!-- ALERT BANNER -->
-    {% if low_stock_count > 0 %}
-    <div class="alert alert-danger">
-        🚨 {{ low_stock_count }} product(s) need reordering!
+  <!-- KPI Stats -->
+  <div class="dash-stats">
+    <div class="dash-stat">
+      <div class="dash-stat-label">Total Sales</div>
+      <div class="dash-stat-value">{{ total_sales_count }}</div>
     </div>
+
+    <div class="dash-stat">
+      <div class="dash-stat-label">Revenue Today</div>
+      <div class="dash-stat-value">KES {{ total_revenue }}</div>
+    </div>
+
+    <div class="dash-stat">
+      <div class="dash-stat-label">Cash Collected</div>
+      <div class="dash-stat-value">KES {{ cash_collected }}</div>
+      <div class="dash-stat-sub">
+        Cash: KES {{ cash_sales }} · Mobile: KES {{ mobile_sales }}
+      </div>
+    </div>
+
+    <div class="dash-stat">
+      <div class="dash-stat-label">Credit Sales</div>
+      <div class="dash-stat-value">KES {{ total_credit }}</div>
+    </div>
+  </div>
+
+  <!-- Profit + Credit overview -->
+  <div class="dash-grid-2">
+    <div class="dash-panel" style="margin-bottom: 0">
+      <div class="dash-panel-header">Profit Today</div>
+      <table class="dash-table">
+        <tbody>
+          <tr>
+            <td>
+              Expected Profit
+              <div class="dash-stat-sub">If all credit is paid</div>
+            </td>
+            <td class="text-end">KES {{ expected_profit }}</td>
+          </tr>
+          <tr>
+            <td>
+              Realized Profit
+              <div class="dash-stat-sub">Cash + mobile only</div>
+            </td>
+            <td class="text-end">KES {{ realized_profit }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dash-panel" style="margin-bottom: 0">
+      <div class="dash-panel-header">Credit Overview</div>
+      <table class="dash-table">
+        <tbody>
+          <tr>
+            <td>Total Outstanding</td>
+            <td class="text-end">KES {{ total_outstanding_credit }}</td>
+          </tr>
+          <tr>
+            <td>
+              <span class="dash-pill good"
+                ><span class="dash-pill-dot"></span>0–7 days</span
+              >
+            </td>
+            <td class="text-end">KES {{ credit_0_7 }}</td>
+          </tr>
+          <tr>
+            <td>
+              <span class="dash-pill warn"
+                ><span class="dash-pill-dot"></span>8–30 days</span
+              >
+            </td>
+            <td class="text-end">KES {{ credit_8_30 }}</td>
+          </tr>
+          <tr>
+            <td>
+              <span class="dash-pill bad"
+                ><span class="dash-pill-dot"></span>30+ days</span
+              >
+            </td>
+            <td class="text-end">KES {{ credit_30_plus }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Top products / customers -->
+  <div class="dash-grid-2">
+    <div class="dash-panel" style="margin-bottom: 0">
+      <div class="dash-panel-header">Top Selling Products Today</div>
+      {% if top_products %}
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="text-end">Qty</th>
+            <th class="text-end">Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in top_products %}
+          <tr>
+            <td>{{ item.product__name }}</td>
+            <td class="text-end">{{ item.total_qty }}</td>
+            <td class="text-end">KES {{ item.total_revenue }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="dash-empty">No sales yet today.</div>
+      {% endif %}
+    </div>
+
+    <div class="dash-panel" style="margin-bottom: 0">
+      <div class="dash-panel-header">Top Customers Today</div>
+      {% if top_customers %}
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th class="text-end">Spent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in top_customers %}
+          <tr>
+            <td>{{ c.customer__name }}</td>
+            <td class="text-end">KES {{ c.total_spent }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="dash-empty">No customer activity today.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Hourly trend -->
+  <div class="dash-panel">
+    <div class="dash-panel-header">Hourly Sales Trend</div>
+    {% if hourly_sales %}
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Hour</th>
+          <th class="text-end">Transactions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in hourly_sales %}
+        <tr>
+          <td>{{ h.hour }}:00</td>
+          <td class="text-end">{{ h.total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="dash-empty">No sales data yet today.</div>
     {% endif %}
+  </div>
 
-    <!-- KPI Cards -->
-    <div class="row">
-
-        <div class="col-md-3">
-            <div class="card text-bg-primary mb-3">
-                <div class="card-body">
-                    <h5>Total Sales</h5>
-                    <h3>{{ total_sales_count }}</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-bg-success mb-3">
-                <div class="card-body">
-                    <h5>Revenue Today</h5>
-                    <h3>{{ total_revenue }}</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-bg-warning mb-3">
-                <div class="card-body">
-                    <h5>Profit Today</h5>
-                    <div>
-                        <h6>Expected Profit (If All Credit is Paid)</h6>
-                        <h7>{{ expected_profit }}</h7>
-                    </div>
-                    
-                    <div>
-                        <h6>Realized Profit (Cash Profit Only)</h6>
-                        <h7>{{ realized_profit }}</h7>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card text-bg-danger mb-3">
-                <div class="card-body">
-                    <h5>Credit Sales</h5>
-                    <h3>{{ total_credit }}</h3>
-                </div>
-            </div>
-        </div>
-
+  <!-- Stock health -->
+  <div class="dash-grid-2">
+    <div class="dash-panel" style="margin-bottom: 0">
+      <div class="dash-panel-header">⚠️ Low Stock Products</div>
+      {% if low_stock_products %}
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="text-end">In Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in low_stock_products %}
+          <tr>
+            <td>{{ product.name }}</td>
+            <td class="text-end">
+              <span class="dash-pill bad"
+                ><span class="dash-pill-dot"></span>{{ product.stock_quantity
+                }}</span
+              >
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="dash-empty">All stock levels are healthy.</div>
+      {% endif %}
     </div>
 
-    <!-- Cash Collected Section -->
-    <div>
-        <h3>Cash Collected Today</h3>
-        <h2>{{ cash_collected }}</h2>
-
-        <p>Cash Sales: {{ cash_sales }}</p>
-        <p>Mobile Money: {{ mobile_sales }}</p>
+    <div class="dash-panel" style="margin-bottom: 0">
+      <div class="dash-panel-header">🧱 Dead Stock (no sales in 30+ days)</div>
+      {% if dead_stock_products %}
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="text-end">In Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in dead_stock_products %}
+          <tr>
+            <td>{{ product.name }}</td>
+            <td class="text-end">{{ product.stock_quantity }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="dash-empty">No dead stock.</div>
+      {% endif %}
     </div>
+  </div>
 
-    <!-- Total Outstanding Credit Section -->
-    <div>
-        <h3>Total Outstanding Credit</h3>
-        <h2>{{ total_outstanding_credit }}</h2>
-    </div>
-
-    <!-- Credit Aging Section -->
-    <div>
-        <h3>Credit Aging</h3>
-
-        <p>🟢 0 - 7 days: {{ credit_0_7 }}</p>
-        <p>🟠 8 - 30 days: {{ credit_8_30 }}</p>
-        <p>🔴 30+ days: {{ credit_30_plus }}</p>
-    </div>
-
-    <!-- Top Products Section -->
-    <div class="card mt-4">
-        <div class="card-header">
-            Top Selling Products Today
-        </div>
-        <div class="card-body">
-
-            <ul class="list-group">
-                {% for item in top_products %}
-                    <li class="list-group-item d-flex justify-content-between">
-                        {{ item.product__name }}
-                        <span class="badge bg-primary">
-                            Qty: {{ item.total_qty }}
-                        </span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item">No sales yet today</li>
-                {% endfor %}
-            </ul>
-
-        </div>
-    </div>
-
-    <!-- Top Customers Section -->
-    <div class="card mt-4">
-        <div class="card-header">
-            Top Customers Today
-        </div>
-        <div class="card-body">
-
-            <ul class="list-group">
-                {% for c in top_customers %}
-                    <li class="list-group-item d-flex justify-content-between">
-                        {{ c.customer__name }}
-                        <span class="badge bg-success">
-                            {{ c.total_spent }}
-                        </span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item">No customer activity today</li>
-                {% endfor %}
-            </ul>
-
-        </div>
-    </div>
-
-    <!-- Hourly Sales Section -->
-    <div class="card mt-4">
-        <div class="card-header">
-            Hourly Sales Trend
-        </div>
-        <div class="card-body">
-
-            <ul class="list-group">
-                {% for h in hourly_sales %}
-                    <li class="list-group-item d-flex justify-content-between">
-                        Hour {{ h.hour }}
-                        <span class="badge bg-dark">
-                            {{ h.total }} sales
-                        </span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item">No sales data yet</li>
-                {% endfor %}
-            </ul>
-
-        </div>
-    </div>
-
-    <!-- Low Stock Section -->
-    <div class="card mt-4">
-        <div class="card-header">
-            ⚠️ Low Stock Products
-        </div>
-
-        <div class="card-body">
-
-            {% if low_stock_products %}
-
-                <ul class="list-group">
-                    {% for product in low_stock_products %}
-                        <li class="list-group-item d-flex justify-content-between">
-                            {{ product.name }}
-                            <span class="badge bg-danger">
-                                {{ product.stock_quantity }}
-                            </span>
-                        </li>
-                    {% endfor %}
-                </ul>
-
-            {% else %}
-                <p class="text-success">All stock levels are healthy</p>
-            {% endif %}
-
-        </div>
-    </div>
-
-    <!-- Dead Stock Section -->
-    <div class="card mt-4 border-danger">
-        <div class="card-header bg-danger text-white">
-            🧱 Dead Stock (No sales in 30+ days)
-        </div>
-
-        <div class="card-body">
-
-            {% if dead_stock_products %}
-
-                <ul class="list-group">
-                    {% for product in dead_stock_products %}
-                        <li class="list-group-item d-flex justify-content-between">
-                            {{ product.name }}
-
-                            <span class="badge bg-dark">
-                                Stock: {{ product.stock_quantity }}
-                            </span>
-                        </li>
-                    {% endfor %}
-                </ul>
-
-            {% else %}
-                <p class="text-success">No dead stock </p>
-            {% endif %}
-
-        </div>
-    </div>
-
-    <!-- Reorder Suggestions Section -->
-    <div class="card mt-4 border-warning">
-        <div class="card-header bg-warning">
-            Reorder Suggestions
-        </div>
-
-        <div class="card-body">
-
-            {% for item in reorder_suggestions %}
-                <div class="d-flex justify-content-between mb-2">
-                    <span>{{ item.product.name }}</span>
-                    <span class="badge bg-dark">
-                        Reorder: {{ item.suggested_qty }}
-                    </span>
-                </div>
-            {% empty %}
-                <p>No reorder needed </p>
-            {% endfor %}
-
-        </div>
-    </div>
-
+  <!-- Reorder suggestions -->
+  <div class="dash-panel">
+    <div class="dash-panel-header">Reorder Suggestions</div>
+    {% if reorder_suggestions %}
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th class="text-end">Suggested Qty</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in reorder_suggestions %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td class="text-end">{{ item.suggested_qty }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="dash-empty">No reorder needed.</div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
