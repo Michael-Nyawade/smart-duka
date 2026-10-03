@@ -47,72 +47,41 @@
         <div class="collapse navbar-collapse" id="navbarNav">
 
             {% if user.is_authenticated %}
-
                 <ul class="navbar-nav me-auto site-nav-links">
-
                     {% if user.is_superuser or user.userprofile.role == "MANAGER" or user.userprofile.role == "ADMIN" %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'dashboard' %}">
-                                Dashboard
-                            </a>
+                            <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
                         </li>
-
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'product_list' %}">
-                                Inventory
-                            </a>
+                            <a class="nav-link" href="{% url 'product_list' %}">Inventory</a>
                         </li>
-
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'stock_receive' %}">
-                                Receive Stock
-                            </a>
+                            <a class="nav-link" href="{% url 'stock_receive' %}">Receive Stock</a>
                         </li>
-
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'stock_movement_list' %}">
-                                Stock History
-                            </a>
+                            <a class="nav-link" href="{% url 'stock_movement_list' %}">Stock History</a>
                         </li>
-
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'inventory_alerts' %}">
-                                Alerts
-                            </a>
+                            <a class="nav-link" href="{% url 'inventory_alerts' %}">Alerts</a>
                         </li>
                     {% endif %}
-
                     {% if user.is_superuser or user.userprofile.role == "CASHIER" or user.userprofile.role == "MANAGER" or user.userprofile.role == "ADMIN" %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'pos_home' %}">
-                                POS
-                            </a>
+                            <a class="nav-link" href="{% url 'pos_home' %}">POS</a>
                         </li>
                     {% endif %}
-
                 </ul>
-
                 <div class="site-nav-actions">
-                    <a class="nav-link site-logout" href="{% url 'logout' %}">
-                        Logout
-                    </a>
+                    <a class="nav-link site-logout" href="{% url 'logout' %}">Logout</a>
                 </div>
-
             {% else %}
-
                 <ul class="navbar-nav ms-auto site-nav-links">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'landing' %}#features">
-                            Features
-                        </a>
+                        <a class="nav-link" href="{% url 'landing' %}#features">Features</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pos_login' %}">
-                            Login
-                        </a>
+                        <a class="nav-link" href="{% url 'pos_login' %}">Login</a>
                     </li>
-
                     <li class="nav-item">
                         <a class="site-nav-cta" href="{% url 'pos_login' %}">
                             Get started
@@ -120,9 +89,7 @@
                         </a>
                     </li>
                 </ul>
-
             {% endif %}
-
         </div>
     </div>
 </nav>
@@ -140,6 +107,21 @@
         document.body.addEventListener('htmx:configRequest', function(event) {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
         });
+    </script>
+
+    <!-- Password show/hide toggle, used on login/register -->
+    <script>
+        function toggleReveal(btn) {
+            const input = btn.previousElementSibling;
+            const showing = input.type === "text";
+
+            input.type = showing ? "password" : "text";
+
+            btn.querySelector(".icon-eye").style.display = showing ? "" : "none";
+            btn.querySelector(".icon-eye-off").style.display = showing ? "none" : "";
+
+            btn.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+        }
     </script>
 
 </body>

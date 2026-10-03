@@ -642,3 +642,45 @@ h2 {
 .auth-footer a {
   font-weight: 600;
 }
+
+/* =========================================================
+   Required-field marker and password visibility toggle
+   ========================================================= */
+
+.required-mark {
+  color: #c0392b;
+  margin-left: 2px;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input[type="password"],
+.password-field input[type="text"] {
+  padding-right: 40px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--sd-muted);
+}
+
+.password-toggle:hover {
+  color: var(--sd-ink);
+}
+
+.password-toggle:focus {
+  outline: 2px solid var(--sd-green);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
