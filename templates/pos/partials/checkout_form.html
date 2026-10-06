@@ -1,34 +1,41 @@
-<h2>Checkout</h2>
+<div class="pos-checkout-panel">
+  <h2>Checkout</h2>
 
-{% if error %}
-  <div style="color:red;">
-    {{ error }}
-  </div>
-{% endif %}
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
 
-<form
+  <form
     hx-post="{% url 'htmx_process_checkout' %}"
     hx-target="#checkout-box"
     hx-swap="innerHTML"
->
+  >
     {% csrf_token %}
 
-    <h3>Total: {{ total }}</h3>
+    <div class="pos-cart-total">
+      <span>Total</span>
+      <span>KES {{ total }}</span>
+    </div>
 
-    <label>Customer</label>
-    <select name="customer">
+    <div class="mb-3">
+      <label>Customer</label>
+      <select name="customer" class="form-select">
         <option value="">Walk-in</option>
         {% for c in customers %}
-            <option value="{{ c.id }}">{{ c.name }}</option>
+        <option value="{{ c.id }}">{{ c.name }}</option>
         {% endfor %}
-    </select>
+      </select>
+    </div>
 
-    <label>Payment Method</label>
-    <select name="payment_method">
+    <div class="mb-3">
+      <label>Payment Method</label>
+      <select name="payment_method" class="form-select">
         <option value="CASH">Cash</option>
         <option value="MOBILE">Mobile Money</option>
         <option value="CREDIT">Credit</option>
-    </select>
+      </select>
+    </div>
 
-    <button type="submit">Complete Sale</button>
-</form>
+    <button type="submit" class="btn btn-primary w-100">Complete Sale</button>
+  </form>
+</div>

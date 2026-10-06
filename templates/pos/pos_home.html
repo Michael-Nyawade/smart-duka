@@ -1,64 +1,58 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block content %}
 
 <div class="container-fluid mt-3">
 
-    <div class="row">
+    <div class="pos-layout">
 
         <!-- LEFT: PRODUCTS -->
-        <div class="col-md-7">
+        <div>
 
-            <h4>POS System</h4>
+            <h4 class="pos-panel-title">Point of Sale</h4>
 
-            <!-- SEARCH -->
             <input
                 type="text"
                 id="product-search"
-                class="form-control mb-3"
-                placeholder="Search product... "
+                class="form-control"
+                placeholder="Search products by name..."
                 autofocus
             />
 
-            <!-- PRODUCTS LIST -->
-            <div id="product-results" class="list-group"></div>
+            <div id="product-results" class="pos-search-results"></div>
 
-            <!-- STATIC PRODUCT LIST -->
-            <hr>
+            <div class="pos-section-label">All Products</div>
 
-            <h6>All Products</h6>
-
-            <div class="row">
+            <div class="pos-product-grid">
                 {% for product in products %}
-                <div class="col-md-4 mb-2">
+                <div class="pos-product-card">
 
-                    <div class="card p-2">
+                    <div class="pos-product-name">{{ product.name }}</div>
+                    <div class="pos-product-price">KES {{ product.selling_price }}</div>
 
-                        <strong>{{ product.name }}</strong>
+                    {% if product.stock_quantity <= 0 %}
+                        <div class="pos-product-stock out">Out of stock</div>
+                    {% elif product.is_low_stock %}
+                        <div class="pos-product-stock low">Only {{ product.stock_quantity }} left</div>
+                    {% else %}
+                        <div class="pos-product-stock">Stock: {{ product.stock_quantity }}</div>
+                    {% endif %}
 
-                        <div>
-                            KES {{ product.selling_price }}
-                        </div>
-
-                        <small>
-                            Stock: {{ product.stock_quantity }}
-                        </small>
-
-                        <!-- HTMX Add to Cart -->
-                        <form
-                            hx-post="{% url 'htmx_add_to_cart' %}"
-                            hx-target="#cart-box"
-                            hx-swap="innerHTML"
+                    <form
+                        hx-post="{% url 'htmx_add_to_cart' %}"
+                        hx-target="#cart-box"
+                        hx-swap="innerHTML"
+                    >
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <button
+                            type="submit"
+                            class="btn btn-primary btn-sm"
+                            {% if product.stock_quantity <= 0 %}disabled{% endif %}
                         >
-                            {% csrf_token %}
-                            <input type="hidden" name="product_id" value="{{ product.id }}">
-                            <button type="submit" class="btn btn-sm btn-primary mt-2">
-                                Add {{ product.name }}
-                            </button>
-                        </form>
-
-                    </div>
+                            Add to cart
+                        </button>
+                    </form>
 
                 </div>
                 {% endfor %}
@@ -66,30 +60,16 @@
 
         </div>
 
-        <!-- RIGHT: CART -->
-        <div class="col-md-5">
+        <!-- RIGHT: CART + CHECKOUT -->
+        <div>
 
-            <div id="cart-box">
-                {% include "pos/partials/cart.html" %}
+            <div class="pos-cart-panel">
+                <div class="pos-cart-header">Cart</div>
+                <div id="cart-box">
+                    {% include "pos/partials/cart.html" %}
+                </div>
             </div>
 
-            <hr>
-
-            <!-- HTMX Checkout Trigger -->
-            <button
-                hx-get="{% url 'htmx_checkout_form' %}"
-                hx-target="#checkout-box"
-                hx-swap="innerHTML"
-                class="btn btn-success w-100 mt-2"
-            >
-                Checkout
-            </button>
-
-            <a href="{% url 'clear_cart' %}" class="btn btn-danger w-100 mt-2">
-                Clear Cart
-            </a>
-
-            <!-- Checkout Container -->
             <div id="checkout-box"></div>
 
         </div>
@@ -120,7 +100,7 @@ searchInput.addEventListener("input", function () {
 
     debounceTimer = setTimeout(async () => {
 
-        const res = await fetch(`/pos/search/?q=${query}`);
+        const res = await fetch(`/pos/search/?q=${encodeURIComponent(query)}`);
         const data = await res.json();
 
         resultsBox.innerHTML = "";
@@ -128,16 +108,13 @@ searchInput.addEventListener("input", function () {
         data.forEach(product => {
 
             const div = document.createElement("div");
-
-            div.className = "list-group-item list-group-item-action";
+            div.className = "pos-search-result";
 
             div.innerHTML = `
-                <strong>${product.name}</strong>
-                <br>
-                KES ${product.price} | Stock: ${product.stock}
+                <span>${product.name}</span>
+                <span class="pos-search-result-meta">KES ${product.price} · Stock: ${product.stock}</span>
             `;
 
-            // HTMX alternative: inject form dynamically
             div.onclick = () => {
                 const form = document.createElement("form");
                 form.setAttribute("hx-post", "{% url 'htmx_add_to_cart' %}");
@@ -148,7 +125,8 @@ searchInput.addEventListener("input", function () {
                     <input type="hidden" name="product_id" value="${product.id}">
                 `;
                 document.body.appendChild(form);
-                form.submit();
+                htmx.process(form);
+                htmx.trigger(form, "submit");
             };
 
             resultsBox.appendChild(div);

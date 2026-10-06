@@ -1,41 +1,80 @@
-<h3>Cart</h3>
-
 {% if cart %}
 
-<table width="100%">
-    <tr>
-        <th>Item</th>
-        <th>Qty</th>
-        <th>Actions</th>
-    </tr>
+<div class="pos-cart-body">
+  {% for key, item in cart.items %}
+  <div class="pos-cart-row">
+    <div>
+      <div class="pos-cart-item-name">{{ item.name }}</div>
+      <div class="pos-cart-item-price">KES {{ item.price }} each</div>
+    </div>
 
-    {% for key, item in cart.items %}
-    <tr>
-        <td>{{ item.name }}</td>
-        <td>{{ item.qty }}</td>
-        <td>
-            <button
-                hx-post="{% url 'decrease_qty' key %}"
-                hx-target="#cart-box"
-                hx-swap="innerHTML"
-            >
-                -
-            </button>
+    <div class="pos-qty-stepper">
+      <button
+        type="button"
+        class="pos-qty-btn"
+        hx-post="{% url 'decrease_qty' key %}"
+        hx-target="#cart-box"
+        hx-swap="innerHTML"
+      >
+        −
+      </button>
 
-            <button
-                hx-post="{% url 'increase_qty' key %}"
-                hx-target="#cart-box"
-                hx-swap="innerHTML"
-            >
-                +
-            </button>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+      <span>{{ item.qty }}</span>
 
-<h3>Total: {{ total }}</h3>
+      <button
+        type="button"
+        class="pos-qty-btn"
+        hx-post="{% url 'increase_qty' key %}"
+        hx-target="#cart-box"
+        hx-swap="innerHTML"
+      >
+        +
+      </button>
+
+      <button
+        type="button"
+        class="pos-cart-remove"
+        title="Remove item"
+        hx-post="{% url 'remove_from_cart' key %}"
+        hx-target="#cart-box"
+        hx-swap="innerHTML"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="pos-cart-footer">
+  <div class="pos-cart-total">
+    <span>Total</span>
+    <span>KES {{ total }}</span>
+  </div>
+
+  <div class="pos-cart-actions">
+    <button
+      type="button"
+      hx-get="{% url 'htmx_checkout_form' %}"
+      hx-target="#checkout-box"
+      hx-swap="innerHTML"
+      class="btn btn-primary"
+    >
+      Checkout
+    </button>
+
+    <button
+      type="button"
+      hx-post="{% url 'clear_cart' %}"
+      hx-target="#cart-box"
+      hx-swap="innerHTML"
+      class="btn btn-outline-secondary"
+    >
+      Clear Cart
+    </button>
+  </div>
+</div>
 
 {% else %}
-<p>Cart is empty</p>
+<div class="pos-cart-empty">Cart is empty. Add a product to get started.</div>
 {% endif %}

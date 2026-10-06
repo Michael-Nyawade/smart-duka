@@ -1,9 +1,14 @@
-<h2>Sale Completed </h2>
+<div class="pos-receipt-panel">
+  <div class="pos-receipt-icon">✓</div>
 
-<p><strong>Receipt:</strong> {{ sale.receipt_number }}</p>
+  <h2>Sale Completed</h2>
 
-<p><strong>Total:</strong> {{ sale.total_amount }}</p>
+  <p>
+    Receipt: <span class="pos-receipt-number">{{ sale.receipt_number }}</span>
+  </p>
+  <p>Total: <strong>KES {{ sale.total_amount }}</strong></p>
 
-<a href="{% url 'pos_home' %}">
-    <button>New Sale</button>
-</a>
+  <a href="{% url 'pos_home' %}" class="btn btn-primary w-100 mt-2">
+    New Sale
+  </a>
+</div>

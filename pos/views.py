@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseBadRequest, HttpResponse
 from django.template.loader import render_to_string
@@ -113,21 +113,33 @@ def htmx_process_checkout(request):
 
 
 @login_required
+@require_POST
 def remove_from_cart(request, product_id):
-    cart = request.session.get('cart', {})
+    cart = request.session.get("cart", {})
     pid = str(product_id)
 
     if pid in cart:
         del cart[pid]
 
-    request.session['cart'] = cart
-    return redirect('pos_home')
+    request.session["cart"] = cart
+
+    total = sum(i["qty"] * i["price"] for i in cart.values())
+
+    return render(request, "pos/partials/cart.html", {
+        "cart": cart,
+        "total": total,
+    })
 
 
 @login_required
+@require_POST
 def clear_cart(request):
-    request.session['cart'] = {}
-    return redirect('pos_home')
+    request.session["cart"] = {}
+
+    return render(request, "pos/partials/cart.html", {
+        "cart": {},
+        "total": 0,
+    })
 
 
 # HTMX quantity views
