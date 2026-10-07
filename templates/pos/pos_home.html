@@ -17,6 +17,7 @@
                 class="form-control"
                 placeholder="Search products by name..."
                 autofocus
+                autocomplete="off"
             />
 
             <div id="product-results" class="pos-search-results"></div>
@@ -87,6 +88,10 @@ const resultsBox = document.getElementById("product-results");
 
 let debounceTimer;
 
+function clearSearchResults() {
+    resultsBox.innerHTML = "";
+}
+
 searchInput.addEventListener("input", function () {
 
     clearTimeout(debounceTimer);
@@ -94,7 +99,7 @@ searchInput.addEventListener("input", function () {
     const query = this.value;
 
     if (query.length < 1) {
-        resultsBox.innerHTML = "";
+        clearSearchResults();
         return;
     }
 
@@ -104,6 +109,14 @@ searchInput.addEventListener("input", function () {
         const data = await res.json();
 
         resultsBox.innerHTML = "";
+
+        if (data.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "pos-search-result pos-search-empty";
+            empty.textContent = `No products match "${query}"`;
+            resultsBox.appendChild(empty);
+            return;
+        }
 
         data.forEach(product => {
 
@@ -127,6 +140,10 @@ searchInput.addEventListener("input", function () {
                 document.body.appendChild(form);
                 htmx.process(form);
                 htmx.trigger(form, "submit");
+
+                clearSearchResults();
+                searchInput.value = "";
+                searchInput.focus();
             };
 
             resultsBox.appendChild(div);

@@ -930,6 +930,16 @@ h2 {
   white-space: nowrap;
 }
 
+.pos-search-empty {
+  cursor: default;
+  color: var(--sd-muted);
+  font-size: 0.88rem;
+}
+
+.pos-search-empty:hover {
+  background: var(--sd-surface);
+}
+
 .pos-section-label {
   font-size: 0.78rem;
   text-transform: uppercase;
