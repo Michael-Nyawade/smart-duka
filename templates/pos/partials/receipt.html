@@ -12,3 +12,8 @@
     New Sale
   </a>
 </div>
+
+<!-- Out-of-band swap: refresh the cart panel to empty now that the sale is complete -->
+<div id="cart-box" hx-swap-oob="true">
+  {% include "pos/partials/cart.html" %}
+</div>

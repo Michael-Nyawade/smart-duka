@@ -108,7 +108,9 @@ def htmx_process_checkout(request):
     request.session["cart"] = {}
 
     return render(request, "pos/partials/receipt.html", {
-        "sale": sale
+        "sale": sale,
+        "cart": {},
+        "total": 0,
     })
 
 
