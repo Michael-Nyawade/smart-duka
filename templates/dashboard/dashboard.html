@@ -192,12 +192,7 @@
           {% for product in low_stock_products %}
           <tr>
             <td>{{ product.name }}</td>
-            <td class="text-end">
-              <span class="dash-pill bad"
-                ><span class="dash-pill-dot"></span>{{ product.stock_quantity
-                }}</span
-              >
-            </td>
+            <td class="text-end"><span class="dash-pill bad"><span class="dash-pill-dot"></span>{{ product.stock_quantity }}</span></td>
           </tr>
           {% endfor %}
         </tbody>
