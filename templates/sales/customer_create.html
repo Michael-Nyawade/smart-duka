@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 480px;">
+
+    <h2 class="mb-4">Add Customer</h2>
+
+    <div class="card">
+        <div class="card-header">Customer details</div>
+        <div class="card-body p-3">
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    {{ form.name.errors }}
+                    <label for="{{ form.name.id_for_label }}">
+                        Name <span class="required-mark">*</span>
+                    </label>
+                    {{ form.name }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.phone_number.errors }}
+                    <label for="{{ form.phone_number.id_for_label }}">Phone number</label>
+                    {{ form.phone_number }}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Save Customer</button>
+            </form>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

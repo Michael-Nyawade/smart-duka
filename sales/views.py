@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from core.utils import get_user_shop
 from .models import Sale, Customer, CreditPayment
+from .forms import CustomerForm
 
 
 @login_required
@@ -19,6 +20,39 @@ def sale_receipt_view(request, receipt_number):
     }
 
     return render(request, 'sales/receipt.html', context)
+
+
+@login_required
+def customer_list(request):
+    shop = get_user_shop(request.user)
+
+    customers = Customer.objects.filter(shop=shop).order_by('name')
+
+    return render(request, 'sales/customer_list.html', {
+        'customers': customers,
+    })
+
+
+@login_required
+def customer_create(request):
+    shop = get_user_shop(request.user)
+
+    if request.method == "POST":
+        form = CustomerForm(request.POST)
+
+        if form.is_valid():
+            customer = form.save(commit=False)
+            customer.shop = shop
+            customer.save()
+
+            return redirect('customer_detail', pk=customer.pk)
+
+    else:
+        form = CustomerForm()
+
+    return render(request, 'sales/customer_create.html', {
+        'form': form,
+    })
 
 
 @login_required

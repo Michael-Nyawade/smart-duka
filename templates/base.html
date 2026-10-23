@@ -67,6 +67,9 @@
                     {% endif %}
                     {% if user.is_superuser or user.userprofile.role == "CASHIER" or user.userprofile.role == "MANAGER" or user.userprofile.role == "ADMIN" %}
                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'customer_list' %}">Customers</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{% url 'pos_home' %}">POS</a>
                         </li>
                     {% endif %}
