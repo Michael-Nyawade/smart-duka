@@ -80,6 +80,18 @@ def htmx_process_checkout(request):
     shift_id = request.session.get("shift_id")
     shift = CashierShift.objects.filter(id=shift_id, is_active=True).first()
 
+    def render_checkout_error(message):
+        # Re-show the checkout form with the cashier's choices preserved,
+        # so a failed attempt never silently resets to Cash / Walk-in.
+        return render(request, "pos/partials/checkout_form.html", {
+            "cart": cart,
+            "customers": Customer.objects.filter(shop=shop),
+            "total": sum(i["qty"] * i["price"] for i in cart.values()),
+            "error": message,
+            "selected_customer": customer_id or "",
+            "selected_payment_method": payment_method or "",
+        })
+
     try:
         sale = SaleService.create_sale(
             shop=shop,
@@ -90,20 +102,9 @@ def htmx_process_checkout(request):
             user=request.user
         )
     except ValidationError as e:
-        error_message = e.messages[0] if e.messages else str(e)
-        return render(request, "pos/partials/checkout_form.html", {
-            "cart": cart,
-            "customers": Customer.objects.filter(shop=shop),
-            "total": sum(i["qty"] * i["price"] for i in cart.values()),
-            "error": error_message,
-        })
+        return render_checkout_error(e.messages[0] if e.messages else str(e))
     except ValueError as e:
-        return render(request, "pos/partials/checkout_form.html", {
-            "cart": cart,
-            "customers": Customer.objects.filter(shop=shop),
-            "total": sum(i["qty"] * i["price"] for i in cart.values()),
-            "error": str(e),
-        })
+        return render_checkout_error(str(e))
 
     request.session["cart"] = {}
 
