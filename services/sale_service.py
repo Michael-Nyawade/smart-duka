@@ -4,19 +4,30 @@ from sales.models import Sale, SaleItem
 from inventory.models import Product, StockMovement
 
 
+ALLOWED_PAYMENT_METHODS = {"CASH", "MOBILE", "CREDIT"}
+
+
 class SaleService:
 
     @staticmethod
     @transaction.atomic
     def create_sale(*, shop, customer, payment_method, cart, shift=None, user=None):
 
-        # PHASE 0: CUSTOMER VALIDATION
+        if payment_method not in ALLOWED_PAYMENT_METHODS:
+            raise ValidationError(
+                "Please choose a valid payment method."
+            )
+
+        if payment_method == "CREDIT" and customer is None:
+            raise ValidationError(
+                "Please select a customer for a credit sale."
+            )
+
         if customer and customer.shop != shop:
             raise ValidationError(
                 "Customer does not belong to this shop."
             )
 
-        # PHASE 1: VALIDATION ONLY
         products = {}
 
         for product_id, item in cart.items():
@@ -35,7 +46,6 @@ class SaleService:
 
             products[product_id] = product
 
-        # PHASE 2: COMMIT CHANGES
 
         sale = Sale.objects.create(
             shop=shop,

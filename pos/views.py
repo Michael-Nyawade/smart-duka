@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseBadRequest, HttpResponse
 from django.template.loader import render_to_string
 from django.db import transaction
+from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
@@ -19,7 +20,7 @@ from core.decorators import allowed_roles
 
 
 @login_required
-@allowed_roles(["CASHIER", "MANAGER"])
+@allowed_roles(["CASHIER", "MANAGER", "ADMIN"])
 def pos_home(request):
     products = for_current_shop(Product.objects.all(), request.user)
     cart = request.session.get("cart", {})
@@ -57,29 +58,41 @@ def htmx_checkout_form(request):
 @require_POST
 @transaction.atomic
 def htmx_process_checkout(request):
+    cart = request.session.get("cart", {})
+
+    if not cart:
+        return HttpResponseBadRequest("Cart is empty")
+
+    customer_id = request.POST.get("customer")
+    payment_method = request.POST.get("payment_method")
+
+    shop = get_user_shop(request.user)
+
+    customer = (
+        Customer.objects.filter(
+            id=customer_id,
+            shop=shop
+        ).first()
+        if customer_id
+        else None
+    )
+
+    shift_id = request.session.get("shift_id")
+    shift = CashierShift.objects.filter(id=shift_id, is_active=True).first()
+
+    def render_checkout_error(message):
+        # Re-show the checkout form with the cashier's choices preserved,
+        # so a failed attempt never silently resets to Cash / Walk-in.
+        return render(request, "pos/partials/checkout_form.html", {
+            "cart": cart,
+            "customers": Customer.objects.filter(shop=shop),
+            "total": sum(i["qty"] * i["price"] for i in cart.values()),
+            "error": message,
+            "selected_customer": customer_id or "",
+            "selected_payment_method": payment_method or "",
+        })
+
     try:
-        cart = request.session.get("cart", {})
-
-        if not cart:
-            return HttpResponseBadRequest("Cart is empty")
-
-        customer_id = request.POST.get("customer")
-        payment_method = request.POST.get("payment_method")
-
-        shop = get_user_shop(request.user)
-
-        customer = (
-            Customer.objects.filter(
-                id=customer_id,
-                shop=shop
-            ).first()
-            if customer_id
-            else None
-        )
-
-        shift_id = request.session.get("shift_id")
-        shift = CashierShift.objects.filter(id=shift_id, is_active=True).first()
-
         sale = SaleService.create_sale(
             shop=shop,
             customer=customer,
@@ -88,38 +101,48 @@ def htmx_process_checkout(request):
             shift=shift,
             user=request.user
         )
+    except ValidationError as e:
+        return render_checkout_error(e.messages[0] if e.messages else str(e))
+    except ValueError as e:
+        return render_checkout_error(str(e))
 
-        request.session["cart"] = {}
+    request.session["cart"] = {}
 
-        return render(request, "pos/partials/receipt.html", {
-            "sale": sale
-        })
-
-    except Exception as e:
-        return render(request, "pos/partials/checkout_form.html", {
-            "cart": cart,
-            "customers": Customer.objects.filter(shop=shop),
-            "total": sum(i["qty"] * i["price"] for i in cart.values()),
-            "error": str(e),
-        })
+    return render(request, "pos/partials/receipt.html", {
+        "sale": sale,
+        "cart": {},
+        "total": 0,
+    })
 
 
 @login_required
+@require_POST
 def remove_from_cart(request, product_id):
-    cart = request.session.get('cart', {})
+    cart = request.session.get("cart", {})
     pid = str(product_id)
 
     if pid in cart:
         del cart[pid]
 
-    request.session['cart'] = cart
-    return redirect('pos_home')
+    request.session["cart"] = cart
+
+    total = sum(i["qty"] * i["price"] for i in cart.values())
+
+    return render(request, "pos/partials/cart.html", {
+        "cart": cart,
+        "total": total,
+    })
 
 
 @login_required
+@require_POST
 def clear_cart(request):
-    request.session['cart'] = {}
-    return redirect('pos_home')
+    request.session["cart"] = {}
+
+    return render(request, "pos/partials/cart.html", {
+        "cart": {},
+        "total": 0,
+    })
 
 
 # HTMX quantity views
@@ -196,14 +219,13 @@ def pos_search_products(request):
 @login_required
 @require_POST
 def htmx_add_to_cart(request):
-    from inventory.models import Product
-
     product_id = request.POST.get("product_id")
+
+    if not product_id:
+        return HttpResponseBadRequest("Missing product_id")
+
     shop = get_user_shop(request.user)
-    product = Product.objects.get(
-        id=product_id,
-        shop=shop
-    )
+    product = get_object_or_404(Product, id=product_id, shop=shop)
 
     cart = request.session.get("cart", {})
     pid = str(product_id)

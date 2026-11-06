@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="dash-header">
+        <h2 class="mb-0">Customers</h2>
+        <a href="{% url 'customer_create' %}" class="btn btn-primary">+ Add Customer</a>
+    </div>
+
+    <div class="dash-panel">
+        {% if customers %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th class="text-end">Outstanding Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td><a href="{% url 'customer_detail' customer.pk %}">{{ customer.name }}</a></td>
+                    <td>{{ customer.phone_number|default:"—" }}</td>
+                    <td class="text-end">
+                        {% with balance=customer.outstanding_balance %}
+                            {% if balance > 0 %}
+                                <span class="dash-pill bad"><span class="dash-pill-dot"></span>KES {{ balance }}</span>
+                            {% else %}
+                                KES 0
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="dash-empty">No customers yet. Add your first customer to start tracking credit.</div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
