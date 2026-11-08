@@ -22,9 +22,6 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv(
     "DJANGO_DEBUG",
@@ -44,10 +41,21 @@ if not SECRET_KEY:
             "This is required whenever DEBUG=False."
         )
 
-ALLOWED_HOSTS = os.getenv(
-    "DJANGO_ALLOWED_HOSTS",
-    "127.0.0.1,localhost"
-).split(",")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        "DJANGO_ALLOWED_HOSTS",
+        "127.0.0.1,localhost"
+    ).split(",")
+    if host.strip()
+]
+
+# Full origins including scheme, e.g. https://smartduka.onrender.com
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 
 # Application definition
@@ -106,7 +114,11 @@ if database_url:
     DATABASES = {
         "default": dj_database_url.parse(
             database_url,
-            conn_max_age=600,
+            # Short-lived persistent connections: Neon suspends idle
+            # databases and closes their connections, so keep this low
+            # and health-check connections before reusing them.
+            conn_max_age=60,
+            conn_health_checks=True,
         )
     }
 else:
@@ -160,9 +172,17 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
+# STATICFILES_STORAGE was removed in Django 5.1; STORAGES replaces it.
+# Compression-only storage (no hashed manifest) so tests and local runs
+# never require collectstatic.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 # Login Redirects
 LOGIN_URL = "/login/"
@@ -170,6 +190,10 @@ LOGIN_REDIRECT_URL = "/"
 
 # Production security settings
 if not DEBUG:
+    # The host's proxy terminates HTTPS and tells us via this header.
+    # Without it, SECURE_SSL_REDIRECT would redirect forever.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
     SECURE_SSL_REDIRECT = True
 
     SESSION_COOKIE_SECURE = True
