@@ -1151,3 +1151,13 @@ h2 {
     position: static;
   }
 }
+
+
+/* =========================================================
+   Flash messages (registration success, stock received, etc.)
+   ========================================================= */
+
+.site-messages {
+    width: min(1180px, calc(100% - 40px));
+    margin: 16px auto 0;
+}
