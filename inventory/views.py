@@ -35,7 +35,8 @@ def product_create(request):
     if request.method == "POST":
 
         form = ProductForm(
-            request.POST
+            request.POST,
+            shop=shop
         )
 
         if form.is_valid():
@@ -47,7 +48,7 @@ def product_create(request):
             return redirect("product_list")
 
     else:
-        form = ProductForm()
+        form = ProductForm(shop=shop)
 
 
     return render(
@@ -77,7 +78,8 @@ def product_update(request, pk):
 
         form = ProductForm(
             request.POST,
-            instance=product
+            instance=product,
+            shop=shop
         )
 
         if form.is_valid():
@@ -87,7 +89,7 @@ def product_update(request, pk):
             return redirect("product_list")
 
     else:
-        form = ProductForm(instance=product)
+        form = ProductForm(instance=product, shop=shop)
 
 
     return render(
