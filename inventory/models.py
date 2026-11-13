@@ -25,7 +25,7 @@ class Product(models.Model):
     )
 
     name = models.CharField(max_length=100)
-    sku = models.CharField(max_length=50, unique=True)  # Stock Keeping Unit
+    sku = models.CharField(max_length=50)  # Stock Keeping Unit, unique per shop
 
     buying_price = models.DecimalField(max_digits=10, decimal_places=2)
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -38,6 +38,14 @@ class Product(models.Model):
 
     # Enforce shop isolation
     objects = ShopQuerySet.as_manager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["shop", "sku"],
+                name="unique_sku_per_shop",
+            )
+        ]
 
     def profit_per_item(self):
         return self.selling_price - self.buying_price

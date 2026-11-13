@@ -15,6 +15,28 @@ class ProductForm(forms.ModelForm):
             "reorder_level",
         ]
 
+    def __init__(self, *args, shop=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.shop = shop
+
+    def clean_sku(self):
+        sku = self.cleaned_data["sku"].strip()
+
+        # The shop isn't a form field, so Django's own uniqueness check
+        # skips (shop, sku). Check it here against the current shop.
+        if self.shop is not None:
+            duplicates = Product.objects.filter(shop=self.shop, sku=sku)
+
+            if self.instance.pk:
+                duplicates = duplicates.exclude(pk=self.instance.pk)
+
+            if duplicates.exists():
+                raise forms.ValidationError(
+                    "A product with this SKU already exists in your shop."
+                )
+
+        return sku
+
 
 class StockReceiveForm(forms.ModelForm):
     class Meta:
