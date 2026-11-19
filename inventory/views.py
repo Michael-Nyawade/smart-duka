@@ -15,7 +15,11 @@ def product_list(request):
 
     shop = get_user_shop(request.user)
 
-    products = Product.objects.for_shop(shop).order_by("name")
+    products = (
+        Product.objects.for_shop(shop)
+        .select_related("category")
+        .order_by("name")
+    )
 
     return render(
         request,
