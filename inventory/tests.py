@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from core.models import Shop
-from inventory.models import Category, Product
+from inventory.models import Category, Product, StockMovement
 
 
 class StarterCategoriesTests(TestCase):
@@ -81,3 +81,85 @@ class SkuPerShopTests(TestCase):
         self.assertEqual(response.status_code, 302)
         product.refresh_from_db()
         self.assertEqual(product.name, "Renamed")
+
+
+class InventoryPagesRenderTests(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.shop = Shop.objects.create(name="Page Shop", owner_name="Owner")
+
+        cls.user = User.objects.create_user(
+            username="pages_admin",
+            password="testpass123!",
+        )
+        cls.user.userprofile.shop = cls.shop
+        cls.user.userprofile.role = "ADMIN"
+        cls.user.userprofile.save()
+
+        category, _ = Category.objects.get_or_create(name="Beverages")
+
+        cls.product = Product.objects.create(
+            shop=cls.shop,
+            category=category,
+            name="Page Product",
+            sku="PG-001",
+            buying_price=10,
+            selling_price=15,
+            stock_quantity=0,
+        )
+        cls.empty_product = Product.objects.create(
+            shop=cls.shop,
+            category=category,
+            name="Empty Product",
+            sku="PG-002",
+            buying_price=10,
+            selling_price=15,
+            stock_quantity=0,
+        )
+
+        StockMovement.objects.create(
+            shop=cls.shop,
+            product=cls.product,
+            movement_type="IN",
+            quantity=2,
+            note="Opening stock",
+        )
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_product_list_renders(self):
+        response = self.client.get(reverse("product_list"))
+        self.assertContains(response, "Page Product")
+        self.assertContains(response, "Out of stock")
+
+    def test_product_forms_render(self):
+        add = self.client.get(reverse("product_create"))
+        self.assertContains(add, "Add Product")
+
+        edit = self.client.get(reverse("product_update", args=[self.product.pk]))
+        self.assertContains(edit, "Edit Product")
+        self.assertContains(edit, "Page Product")
+
+    def test_stock_receive_page_renders(self):
+        response = self.client.get(reverse("stock_receive"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_receiving_zero_quantity_is_rejected(self):
+        response = self.client.post(reverse("stock_receive"), {
+            "product": self.product.pk,
+            "quantity": "0",
+            "note": "",
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "at least 1")
+
+    def test_stock_history_renders(self):
+        response = self.client.get(reverse("stock_movement_list"))
+        self.assertContains(response, "Opening stock")
+
+    def test_alerts_page_renders(self):
+        response = self.client.get(reverse("inventory_alerts"))
+        self.assertContains(response, "Empty Product")

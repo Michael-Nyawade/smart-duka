@@ -1,91 +1,51 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container mt-4">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="dash-header">
+        <h2 class="mb-0">Products</h2>
+        <a href="{% url 'product_create' %}" class="btn btn-primary">+ Add Product</a>
+    </div>
 
-    <h2>
-        Products
-    </h2>
-
-    <a href="{% url 'product_create' %}" class="btn btn-primary">
-        Add Product
-    </a>
+    <div class="dash-panel">
+        {% if products %}
+        <div style="overflow-x: auto;">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>SKU</th>
+                        <th>Category</th>
+                        <th class="text-end">Buying price</th>
+                        <th class="text-end">Selling price</th>
+                        <th class="text-end">Stock</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.sku }}</td>
+                        <td>{{ product.category.name }}</td>
+                        <td class="text-end">KES {{ product.buying_price }}</td>
+                        <td class="text-end">KES {{ product.selling_price }}</td>
+                        <td class="text-end">
+                            {% if product.stock_quantity <= 0 %}<span class="dash-pill bad"><span class="dash-pill-dot"></span>Out of stock</span>{% elif product.is_low_stock %}<span class="dash-pill warn"><span class="dash-pill-dot"></span>{{ product.stock_quantity }} · Low</span>{% else %}{{ product.stock_quantity }}{% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="dash-empty">No products yet. Add your first product to start tracking stock.</div>
+        {% endif %}
+    </div>
 
 </div>
-
-
-<table class="table table-striped">
-
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>SKU</th>
-            <th>Category</th>
-            <th>Buying Price</th>
-            <th>Selling Price</th>
-            <th>Stock</th>
-            <th></th>
-        </tr>
-    </thead>
-
-
-    <tbody>
-
-        {% for product in products %}
-
-        <tr>
-
-            <td>
-                {{ product.name }}
-            </td>
-
-            <td>
-                {{ product.sku }}
-            </td>
-
-            <td>
-                {{ product.category }}
-            </td>
-
-            <td>
-                KES {{ product.buying_price }}
-            </td>
-
-            <td>
-                KES {{ product.selling_price }}
-            </td>
-
-            <td>
-                {{ product.stock_quantity }}
-            </td>
-
-            <td>
-
-                <a
-                    href="{% url 'product_update' product.id %}"
-                    class="btn btn-sm btn-outline-secondary"
-                >
-                    Edit
-                </a>
-
-            </td>
-
-        </tr>
-
-        {% empty %}
-
-        <tr>
-            <td colspan="7">
-                No products found.
-            </td>
-        </tr>
-
-        {% endfor %}
-
-    </tbody>
-
-</table>
-
-
 {% endblock %}

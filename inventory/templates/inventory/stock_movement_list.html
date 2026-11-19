@@ -1,62 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container mt-4">
 
-<h2>Stock Movement History</h2>
+    <div class="dash-header">
+        <h2 class="mb-0">Stock History</h2>
+        <a href="{% url 'stock_receive' %}" class="btn btn-primary">+ Receive Stock</a>
+    </div>
 
-<table class="table table-striped">
+    <div class="dash-panel">
+        {% if movements %}
+        <div style="overflow-x: auto;">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Product</th>
+                        <th>Movement</th>
+                        <th class="text-end">Quantity</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movement in movements %}
+                    <tr>
+                        <td>{{ movement.created_at|date:"j M Y, H:i" }}</td>
+                        <td>{{ movement.product.name }}</td>
+                        <td>
+                            {% if movement.movement_type == "IN" %}<span class="dash-pill good"><span class="dash-pill-dot"></span>Stock in</span>{% else %}<span class="dash-pill warn"><span class="dash-pill-dot"></span>Stock out</span>{% endif %}
+                        </td>
+                        <td class="text-end">{% if movement.movement_type == "IN" %}+{% else %}-{% endif %}{{ movement.quantity }}</td>
+                        <td>{{ movement.note|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="dash-empty">No stock movements yet. Receiving stock or making a sale will show up here.</div>
+        {% endif %}
+    </div>
 
-<thead>
-<tr>
-    <th>Product</th>
-    <th>Movement</th>
-    <th>Quantity</th>
-    <th>Note</th>
-    <th>Date</th>
-</tr>
-</thead>
-
-
-<tbody>
-
-{% for movement in movements %}
-
-<tr>
-
-<td>
-{{ movement.product.name }}
-</td>
-
-<td>
-{{ movement.get_movement_type_display }}
-</td>
-
-<td>
-{{ movement.quantity }}
-</td>
-
-<td>
-{{ movement.note }}
-</td>
-
-<td>
-{{ movement.created_at|date:"Y-m-d H:i" }}
-</td>
-
-</tr>
-
-{% empty %}
-
-<tr>
-<td colspan="5">
-No stock movements found.
-</td>
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
-
+</div>
 {% endblock %}

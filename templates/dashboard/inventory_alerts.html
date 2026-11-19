@@ -1,34 +1,88 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container mt-4">
 
-<h2>Inventory Alerts</h2>
+    <div class="dash-header">
+        <h2 class="mb-0">Inventory Alerts</h2>
+        <a href="{% url 'stock_receive' %}" class="btn btn-primary">+ Receive Stock</a>
+    </div>
 
-<h3>⚠️ Low Stock</h3>
-<ul>
-    {% for p in low_stock %}
-        <li>{{ p.name }} - {{ p.stock_quantity }}</li>
-    {% empty %}
-        <li>None</li>
-    {% endfor %}
-</ul>
+    <div class="dash-grid-2">
 
-<h3>🚨 Out of Stock</h3>
-<ul>
-    {% for p in out_of_stock %}
-        <li>{{ p.name }}</li>
-    {% empty %}
-        <li>None</li>
-    {% endfor %}
-</ul>
+        <div class="dash-panel" style="margin-bottom: 0;">
+            <div class="dash-panel-header">🚨 Out of Stock</div>
+            {% if out_of_stock %}
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in out_of_stock %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="dash-empty">Nothing is out of stock.</div>
+            {% endif %}
+        </div>
 
-<h3>🔁 Reorder Candidates</h3>
-<ul>
-    {% for p in reorder %}
-        <li>{{ p.name }} - Stock: {{ p.stock_quantity }} (Reorder level: {{ p.reorder_level }})</li>
-    {% empty %}
-        <li>None</li>
-    {% endfor %}
-</ul>
+        <div class="dash-panel" style="margin-bottom: 0;">
+            <div class="dash-panel-header">⚠️ Low Stock</div>
+            {% if low_stock %}
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th class="text-end">In stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in low_stock %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td class="text-end"><span class="dash-pill warn"><span class="dash-pill-dot"></span>{{ product.stock_quantity }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="dash-empty">All stock levels are healthy.</div>
+            {% endif %}
+        </div>
 
+    </div>
+
+    <div class="dash-panel" style="margin-top: 16px;">
+        <div class="dash-panel-header">🔁 Reorder Candidates</div>
+        {% if reorder %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th class="text-end">In stock</th>
+                    <th class="text-end">Reorder level</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in reorder %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td class="text-end">{{ product.stock_quantity }}</td>
+                    <td class="text-end">{{ product.reorder_level }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="dash-empty">No reorder needed.</div>
+        {% endif %}
+    </div>
+
+</div>
 {% endblock %}
