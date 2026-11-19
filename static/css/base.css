@@ -1161,3 +1161,37 @@ h2 {
     width: min(1180px, calc(100% - 40px));
     margin: 16px auto 0;
 }
+
+
+/* =========================================================
+   Mobile polish: nav menu layout and table readability
+   ========================================================= */
+
+@media (max-width: 991px) {
+    /* Let the opened menu drop below the logo/hamburger row */
+    .site-navbar-inner {
+        flex-wrap: wrap;
+    }
+
+    .site-navbar .navbar-collapse {
+        flex-basis: 100%;
+        width: 100%;
+    }
+
+    /* Line Logout up with the other menu links */
+    .site-nav-actions .nav-link {
+        padding: 10px 8px;
+    }
+}
+
+@media (max-width: 700px) {
+    /* Keep each table row on one line and scroll sideways inside the panel */
+    .dash-panel {
+        overflow-x: auto;
+    }
+
+    .dash-table th,
+    .dash-table td {
+        white-space: nowrap;
+    }
+}
